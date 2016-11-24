@@ -144,8 +144,8 @@ int compteur_prev =0;
   int tempPWMsign;
 
   void incr_right(){
- encoder_G_B = digitalRead(pin_G_B);
- if(encoder_G_B) {
+ encoder_D_B = digitalRead(pin_D_B);
+ if(encoder_D_B) {
         // B is high so clockwise
         rightClicks ++;
      
@@ -158,8 +158,8 @@ int compteur_prev =0;
 
 
   void incr_left(){
- encoder_D_B = digitalRead(pin_D_B);
- if(encoder_D_B) {
+ encoder_G_B = digitalRead(pin_G_B);
+ if(encoder_G_B) {
         // -B is high so cclockwise
         leftClicks --;
      
