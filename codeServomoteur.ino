@@ -29,8 +29,8 @@ int compteur = 0;
 int compteur_prev =0;
 
   // associating input pins constants - depending on the microcontroller (ATMega328; check Arduino ATMega328 pinout for details)
-  #define Left_INT 0 // correspond à la voie 3
-  #define Right_INT 1 // correspond à la voie 2
+  #define Left_INT 1 // correspond à la voie 2
+  #define Right_INT 0 // correspond à la voie 3
   #define Left_A A4
   #define Left_B A5
   #define Right_A 2
@@ -159,6 +159,7 @@ int compteur_prev =0;
 
   void incr_left(){
  encoder_G_B = digitalRead(pin_G_B);
+ 
  if(encoder_G_B) {
         // -B is high so cclockwise
         leftClicks --;
@@ -315,7 +316,7 @@ int compteur_prev =0;
   {
     if (motor == LEFT)
     {
-      if (dir == 0) digitalWrite(EN_L, LOW);//      FORWARD
+      if (dir == 0) digitalWrite(EN_L, LOW);//      FORWARD 
       else if (dir == 1) digitalWrite(EN_L, HIGH);//REVERSE
       else if (dir == 2) digitalWrite(EN_L, LOW);//STOP
     }
@@ -527,7 +528,7 @@ int compteur_prev =0;
               if (abs(deltaForwardLeft + deltaForwardRight) > 20000) errorThresholdSlow = (long) (cpr / 2);
               else errorThresholdSlow = abs(deltaForwardLeft + deltaForwardRight) / 4;
  
-              PIDmode = Coord_PD;
+              PIDmode = Speed_PD;
               PIDautoswitch = true;
  
               break;
@@ -868,6 +869,7 @@ int compteur_prev =0;
         {
           // computing the errors for each motor
           leftError = leftTarget - leftClicks;
+          Serial.println(leftError);
           rightError = rightTarget - rightClicks;
  
  
@@ -876,7 +878,6 @@ int compteur_prev =0;
  
           // computing the derivatives for each motor
           leftDer = leftError - lastLeftError;
-          Serial.println(leftError);
           rightDer = rightError - lastRightError;
  
   //Serial.print("  leftDer: ");
