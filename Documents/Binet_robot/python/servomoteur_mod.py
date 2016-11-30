@@ -6,39 +6,8 @@ l=[]
 finished=True
 
 
-class execution(threading.Thread):
-	def run(self):
-		while True:
-			hasArrived()
-			
-			if finished && l:
-				finished=false
-				command=l.pop(0)
-				if command[0]==1:
-					avancer(command[1])
-				if command[0]==2:
-					r()
-				if command[0]==3:
-					tourner(command[1])
-				if command[0]==4:
-					setNewTarget(command[1])
-				
-				if command[0]==131:
-					maxSpeed(command[1])
-				if command[0]==132:
-					maxAccel(command[1])
-			
-				
-class serialRead(threading.Thread):
-	def run(self):
-		while True:
-			time.sleep(.1)
-			read=ser.read()
-			if read=129:
-				finished=True
-			
-serialRead().start()
-execution().start()
+
+
 
 def cmd(f,args):
 	t=(f,args)
@@ -49,14 +18,6 @@ def avancer(t): ##case 1
 	
 	distance += 32768
 	speed += 32768
-	# if distance > 256**2-1 :
-	# 	distance = 256**2-1
-	# if distance < 0:
-	# 	distance = 0
-	# if speed > 256**2-1:
-	# 	speed = 256**2-1
-	# if speed < 0:
-	# 	speed = 0
 	distance=min(distance,256**2-1)
 	distance=max(0,distance)
 	speed=min(speed,256**2-1)
@@ -132,6 +93,37 @@ def maxAccel(accel): #case 132
 def readPos(): #case140
 	ser.write("11"+chr(140)+chr(0))
 
-def conjonction(tab):
-	while not(tab.empty()):
-		
+
+class execution(threading.Thread):
+	def run(self):
+		while True:
+			hasArrived()
+			
+			if finished and l:
+				finished=false
+				command=l.pop(0)
+				if command[0]==1:
+					avancer(command[1])
+				if command[0]==2:
+					r()
+				if command[0]==3:
+					tourner(command[1])
+				if command[0]==4:
+					setNewTarget(command[1])
+				
+				if command[0]==131:
+					maxSpeed(command[1])
+				if command[0]==132:
+					maxAccel(command[1])
+			
+				
+class serialRead(threading.Thread):
+	def run(self):
+		while True:
+			time.sleep(.1)
+			read=ser.read()
+			if read==129:
+				finished=True
+			
+serialRead().start()
+execution().start()
