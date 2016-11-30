@@ -190,8 +190,8 @@ int compteur_prev =0;
     wheelDiameter = 72; // ENCODER wheel diameter in milimeters
     leftWheelDiameter = 72; // LEFT ENCODER wheel diameter in milimeters
     rightWheelDiameter = 72; // RIGHT ENCODER wheel diameter in milimeters
-    trackWidth = 250; // the distance between the wheels in milimeters
-    motorWheelDiameter = 100; // MOTOR wheel diameter in milimeters
+    trackWidth = 314; // the distance between the wheels in milimeters
+    motorWheelDiameter = 98; // MOTOR wheel diameter in milimeters
  
     // configuring I/O digital ports
     //pinMode(Left_A, INPUT);  // encoder A left input
@@ -385,14 +385,15 @@ int compteur_prev =0;
  
   void sendData()
   {
-    digitalWrite(Serial_Send, HIGH);
-    Serial.write(CARD_TYPE);
-    Serial.write(CARD_INDEX);
+    //digitalWrite(Serial_Send, HIGH);
+    //Serial.write(CARD_TYPE);
+    //Serial.write(CARD_INDEX);
+    Serial.println(replyCommand);
     Serial.write(replyCommand);
     Serial.write((unsigned char)(replyArgCount + 128));
     for (i = 0; i < replyArgCount; i++) Serial.write(replyArg[i]);
     delay(240 + 60 * (int)replyArgCount);
-    digitalWrite(Serial_Send, LOW);
+    //digitalWrite(Serial_Send, LOW);
   }
  
   void doSerial() // UART processing function
@@ -410,11 +411,7 @@ int compteur_prev =0;
       cardType = Serial.read();
       cardIndex = Serial.read();
       cardCommand = Serial.read();
-      cardArgCount = Serial.read();
-      Serial.println(cardCommand);
-      Serial.println(cardArgCount);
- 
- 
+      cardArgCount = Serial.read(); 
       if (true)
       {
         while (Serial.available() < cardArgCount) {};
@@ -426,7 +423,7 @@ int compteur_prev =0;
  
         switch (cardCommand)
         {
-          case 129: // set new destinations in CLICKS :: SetNewTarget() [4 args, 2 vars]
+          case 4: // set new destinations in CLICKS :: SetNewTarget() [4 args, 2 vars]
             {
               newLeftTarget = 256 * (long)cardArg[1] + (long)cardArg[0];
               newRightTarget = 256 * (long)cardArg[3] + (long)cardArg[2];
@@ -436,7 +433,7 @@ int compteur_prev =0;
               break;
             }
  
-          case 50: // reset destination (destination = current position) :: ResetTarget() [0 args, 0 vars]
+          case 2: // reset destination (destination = current position) :: ResetTarget() [0 args, 0 vars]
             {
               leftTarget = leftClicks;
               rightTarget = rightClicks;
@@ -488,15 +485,13 @@ int compteur_prev =0;
                 rightTarget = rightClicks + deltaForward;
                 break;
               */
-              Serial.println("fonction_avancer");
               deltaForward = 256 * (long)cardArg[1] + (long)cardArg[0];
               deltaForward = deltaForward - 32768;
  
               tempDelta = (float) deltaForward;
               tempDelta = tempDelta * (float) cpr / ((float) M_PI * (float) leftWheelDiameter);
               deltaForwardLeft = (long) tempDelta;
-              Serial.println(deltaForwardLeft);
-              
+                            
               tempDelta = (float) deltaForward;
               tempDelta = tempDelta * (float) cpr / ((float) M_PI * (float) rightWheelDiameter);
               deltaForwardRight = (long) tempDelta;
@@ -507,7 +502,6 @@ int compteur_prev =0;
               leftTargetSpeed = 256 * (long)cardArg[3] + (long)cardArg[2];
               leftTargetSpeed = leftTargetSpeed - 32768;
               rightTargetSpeed = leftTargetSpeed;
-              Serial.println(rightTargetSpeed);
               
               leftTargetSpeed = leftTargetSpeed * (long) cpr;
               leftTargetSpeed = leftTargetSpeed * (long) motorWheelDiameter;
@@ -534,7 +528,7 @@ int compteur_prev =0;
               break;
             }
  
-          case 137: // turn around an angle expressed in radians :: TurnRad() [4 args, 2 var] -- old [2 args, 1 var]
+          case 3: // turn around an angle expressed in radians (en millièmes de radians exactement):: TurnRad() [4 args, 2 var] -- old [2 args, 1 var]
             {
               /* OLD FUNCTION - 2 args, 1 var
                 intDeltaAngle = 256 * (long)cardArg[1] + (long)cardArg[0];
@@ -591,7 +585,7 @@ int compteur_prev =0;
               if (abs(deltaForward) > 10000) errorThresholdSlow = (long) (cpr / 2);
               else errorThresholdSlow = abs(deltaForward) / 2;
  
-              PIDmode = Speed_PD;
+              PIDmode = Coord_PD; //modifié par Raphaël
               PIDautoswitch = true;
  
               break;
@@ -705,13 +699,13 @@ int compteur_prev =0;
               break;
             }
  
-          case 143: // find out if the robot has arrived to its destination :: HasArrived() [RETURN: 1 arg, 1 var]
+          case 5: // find out if the robot has arrived to its destination :: HasArrived() [RETURN: 1 arg, 1 var]
             {
               replyCommand = 143;
               replyArgCount = 1;
  
-              if (hasArrived == true) replyArg[0] = 129;
-              else replyArg[0] = 128;
+              if (hasArrived == true) replyArg[0] = 129; // modifié par Raphaël
+              else replyArg[0] = 128; // modifié par Raphaël
  
               sendData();
  
@@ -869,7 +863,6 @@ int compteur_prev =0;
         {
           // computing the errors for each motor
           leftError = leftTarget - leftClicks;
-          Serial.println(leftError);
           rightError = rightTarget - rightClicks;
  
  
