@@ -725,54 +725,6 @@ int compteur_prev =0;
   void loop()
   
   {
-  /* // get the current elapsed time
-  currentTime_1 = micros();
-  
-  if(currentTime_1 >= (loopTime + 5)){
-    
-    // 5micros since last check of encoder = 2000Hz  
-    encoder_A = digitalRead(pin_A);    // Read encoder pins
-    encoder_B_1_1 = digitalRead(pin_B_1);  
-   
-    
-   
-        if((!encoder_A) && (encoder_A_prev)){
-      // A has gone from high to low 
-        
-      if(encoder_B_1_1) {
-        // B is high so clockwise
-     
-        compteur+=1;
-     
-        
-      }   
-      else {
-        // B is low so counter-clockwise      
-     
-        compteur -=1;
-     
-      }   
-        }
-  */
-  
-    /*if ((rightClicks%5)==0) 
-    
-    {
-      if (rightClicks != compteur_prev) Serial.println(rightClicks);
-      compteur_prev=rightClicks;
-    }
-    */
-  if ((leftClicks%5)==0) 
-    
-    {
-      if (leftClicks != compteur_prev); // Serial.println(leftClicks);
-      compteur_prev=leftClicks;
-    }
-   /* 
-    loopTime=currentTime_1;
-    encoder_A_prev=encoder_A;
-
-  }*/
   //**************************************************************************************//
   //*******************computing current coordinates (first 40 lines)*********************//
   //*****goal: to calculate x and y (in clicks) and the error relative to the targets*****//
