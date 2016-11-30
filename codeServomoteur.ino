@@ -60,6 +60,7 @@ int compteur_prev =0;
   #define Speed_PD 1
   #define Coord_PID 2
   #define Speed_PID 3
+  #define New_Coord_PD 4
  
   // other constants
   #define m_pi 3.14159
@@ -102,6 +103,14 @@ int compteur_prev =0;
   boolean PIDautoswitch;
   long lastPWM;
   long errorThresholdSlow, errorThresholdStop;
+
+  // new coordinate PD
+
+  long erreurDistance, erreurAngle;
+  long distanceTarget, angleTarget;
+  long distanceDer, angleDer;
+  long lastErreurAngle, lastErreurDistance;
+  
  
   // coordinate PID
   long leftTarget, rightTarget;
@@ -142,8 +151,9 @@ int compteur_prev =0;
   float tempPWM;
   float tempDelta;
   int tempPWMsign;
+  float angleTargetTemp;
+  float distanceTargetTemp;
 
-  void incr_right(){
  encoder_D_B = digitalRead(pin_D_B);
  if(encoder_D_B) {
         // B is high so clockwise
@@ -423,6 +433,29 @@ int compteur_prev =0;
  
         switch (cardCommand)
         {
+          case 6: // set new detination in Position (distance,angle) in mm and degree.
+            {
+              LeftClicks = 0;
+              RightClicks = 0; // réinitialiser les compteurs
+              
+              distanceTarget = 256 * (long)cardArg[1] + (long)cardArg[0];
+              distanceTarget = distanceTarget - 32768;
+              
+              distanceTargetTemp = (float)distanceTarget;
+              distanceTargetTemp = distanceTargetTemp * (float)cpr /((float) M_PI * (float) WheelDiameter);
+              distanceTarget = (long) distanceTargetTemp;
+              
+              angleTarget = 256*(long)cardArg[3] + (long)cardArg[2];
+              angleTarget = angleTarget - 32768;
+              
+              angleTargetTemp = (float)angleTarget;
+              angleTargetTemp = angleTargetTemp*trackWidth*cpr/(2*wheelDiameter);
+              angleTarget = (long) angleTargetTemp;
+              
+              PIDmode = New_Coord_PD;
+              PIDautoswitch = false;
+            }
+              
           case 4: // set new destinations in CLICKS :: SetNewTarget() [4 args, 2 vars]
             {
               newLeftTarget = 256 * (long)cardArg[1] + (long)cardArg[0];
@@ -802,7 +835,7 @@ int compteur_prev =0;
     avgAngle = (angle + lastAngle) / 2.0;
     lastAngle = angle;
  
-    //***********calculating delta clicks, since last loop itaration************//
+    //***********calculating delta clicks, since last loop iteration************//
     deltaLeftClicks = leftClicks - lastLeftClicks;
     deltaRightClicks = rightClicks - lastRightClicks;
     lastLeftClicks = leftClicks;
@@ -859,6 +892,36 @@ int compteur_prev =0;
   //############################################################################//
     switch (PIDmode)
     {
+      case New_Coord_PD:
+      {
+        erreurDistance = distanceTarget - (leftCLicks+rightClicks)/2;
+        erreurAngle = angleTarget - (rightClicks-leftClicks);
+        
+        distanceDer = erreurDistance - lastErreurDistance;
+        angleDer = erreurAngle - lastErreurAngle;
+        
+        lastErreurDistance = erreurDistance;
+        lastErreurAngle = erreurAngle;
+        
+        leftPWM = (kPcoord * (erreurDistance - erreurAngle) + kDcoord * (distanceDer - angleDer) ) / 1024;
+        rightPWM = (kPcoord * (erreurDistance + erreurAngle) + kDcoord * (distanceDer + angleDer) ) / 1024;
+        
+        // compensating the non-linear dependency speed = f(PWM_Value)
+        tempPWM = (float) abs(leftPWM) / 255.0;
+        tempPWMsign = leftPWM / abs(leftPWM);
+        tempPWM = pow(tempPWM, 0.2);
+        tempPWM = 255.0 * tempPWM;
+        leftPWM = (int) tempPWM * tempPWMsign;
+ 
+        tempPWM = (float) abs(rightPWM) / 255.0;
+        tempPWMsign = rightPWM / abs(rightPWM);
+        tempPWM = pow(tempPWM, 0.2);
+        tempPWM = 255.0 * tempPWM;
+        rightPWM = (int) tempPWM * tempPWMsign;
+        
+        break
+      }
+        
       case Coord_PD: // PD algorithm, target COORDINATES
         {
           // computing the errors for each motor
