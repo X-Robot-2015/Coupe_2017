@@ -129,9 +129,34 @@ def maxAccel(accel): #case 132
 	Arg0 = accel %256
 	ser.write("11"+chr(132)+chr(2)+chr(Arg0)+chr(Arg1)) 
 
+def turncircle(rayon, angle, speed) #case 145
+	rayon += 32768
+	if rayon > 256**2 - 1:
+		rayon = 256**2 - 1
+	if rayon < 0:
+		rayon = 0
+	angle += 32768
+	if angle > 256**2 - 1:
+		angle = 256**2 - 1
+	if angle < 0:
+		angle = 0
+	speed += 32768
+	if(speed > 256**2 - 1):
+		speed = 256**2 - 1
+	if(speed < 0):
+		speed = 0
+	Arg1 = rayon / 256
+	Arg0 = rayon - 256*(int)Arg1
+	Arg3 = angle / 256
+	Arg2 = angle - 256*(int)Arg3
+	Arg5 = speed / 256
+	Arg4 = speed - 256*(int)Arg5
+
+	ser.write("11"+chr(145)+chr(6)+chr(Arg0)+chr(Arg1)+chr(Arg2)+chr(Arg3)+chr(Arg4)+chr(Arg5))
+	
 def readPos(): #case140
 	ser.write("11"+chr(140)+chr(0))
 
 def conjonction(tab):
 	while not(tab.empty()):
-		
+
