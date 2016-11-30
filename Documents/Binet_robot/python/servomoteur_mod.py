@@ -1,7 +1,52 @@
 import serial
 ser = serial.Serial("/dev/ttyACM0",9600,timeout = 1)
+import threading,time
 
-def avancer(distance,speed): ##case 1
+l=[]
+finished=True
+
+
+class execution(threading.Thread):
+	def run(self):
+		while True:
+			hasArrived()
+			
+			if finished && l:
+				finished=false
+				command=l.pop(0)
+				if command[0]==1:
+					avancer(command[1])
+				if command[0]==2:
+					r()
+				if command[0]==3:
+					tourner(command[1])
+				if command[0]==4:
+					setNewTarget(command[1])
+				
+				if command[0]==131:
+					maxSpeed(command[1])
+				if command[0]==132:
+					maxAccel(command[1])
+			
+				
+class serialRead(threading.Thread):
+	def run(self):
+		while True:
+			time.sleep(.1)
+			read=ser.read()
+			if read=129:
+				finished=True
+			
+serialRead().start()
+execution().start()
+
+def cmd(f,args):
+	t=(f,args)
+	l.append(t)
+
+def avancer(t): ##case 1
+	distance,speed=t
+	
 	distance += 32768
 	speed += 32768
 	# if distance > 256**2-1 :
@@ -37,7 +82,8 @@ def tourner(angle): #case3
 	Arg0 = angle - 256*Arg1
 	ser.write("11"+chr(3)+chr(2)+chr(Arg0)+chr(Arg1))
 
-def setNewTarget(x,y): #case4, x et y en clicks
+def setNewTarget(t): #case4, x et y en clicks
+	x,y=t
 	x += 32768
 	if x > 256**2 - 1:
 		x = 256**2 - 1
@@ -85,4 +131,7 @@ def maxAccel(accel): #case 132
 
 def readPos(): #case140
 	ser.write("11"+chr(140)+chr(0))
-	
+
+def conjonction(tab):
+	while not(tab.empty()):
+		
