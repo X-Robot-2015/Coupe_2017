@@ -7,7 +7,21 @@ finished=True
 
 
 
-
+def aller(d,ang): ##distance en cm, angle en °, case6.
+	distance = d
+	angle = ang
+	distance += 32768
+	angle += 32768
+	distance=min(distance,256**2-1)
+	distance=max(0,distance)
+	angle = min(angle,256**2-1)
+	angle = max(0,angle)
+	Arg1 = distance/256
+	Arg0 = distance%256
+	Arg3 = angle/256
+	Arg2 = angle%256
+	
+	ser.write("11"+chr(6)+chr(4) +chr(Arg0) +chr(Arg1) +chr(Arg2) +chr(Arg3))
 
 def cmd(f,args):
 	t=(f,args)
