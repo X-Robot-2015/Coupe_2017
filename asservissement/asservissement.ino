@@ -449,7 +449,7 @@ int compteur_prev =0;
               angleTarget = angleTarget - 32768;
               
               angleTargetTemp = (float)angleTarget;
-              angleTargetTemp = angleTargetTemp*trackWidth*cpr/(2*wheelDiameter);
+              angleTargetTemp = angleTargetTemp*trackWidth*cpr/(180*wheelDiameter);
               angleTarget = (long) angleTargetTemp;
               
               PIDmode = New_Coord_PD;
