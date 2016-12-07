@@ -23,7 +23,7 @@ def aller(d,ang): ##distance en cm, angle en °, case6.
 	Arg0 = distance%256
 	Arg3 = angle/256
 	Arg2 = angle%256
-	
+
 	ser.write("11"+chr(6)+chr(4) +chr(Arg0) +chr(Arg1) +chr(Arg2) +chr(Arg3))
 
 def cmd(f,args):
