@@ -436,14 +436,14 @@ int compteur_prev =0;
         {
           case 6: // set new detination in Position (distance,angle) in mm and degree.
             {
-              LeftClicks = 0;
-              RightClicks = 0; // réinitialiser les compteurs
+              leftClicks = 0;
+              rightClicks = 0; // réinitialiser les compteurs
               
               distanceTarget = 256 * (long)cardArg[1] + (long)cardArg[0];
               distanceTarget = distanceTarget - 32768;
               
               distanceTargetTemp = (float)distanceTarget;
-              distanceTargetTemp = distanceTargetTemp * (float)cpr /((float) m_pi * (float) WheelDiameter);
+              distanceTargetTemp = distanceTargetTemp * (float)cpr /((float) m_pi * (float) wheelDiameter);
               distanceTarget = (long) distanceTargetTemp;
               
               angleTarget = 256*(long)cardArg[3] + (long)cardArg[2];
@@ -849,7 +849,7 @@ int compteur_prev =0;
     {
       case New_Coord_PD:
       {
-        erreurDistance = distanceTarget - (leftCLicks+rightClicks)/2;
+        erreurDistance = distanceTarget - (leftClicks+rightClicks)/2;
         erreurAngle = angleTarget - (rightClicks-leftClicks);
         
         distanceDer = erreurDistance - lastErreurDistance;
@@ -874,7 +874,7 @@ int compteur_prev =0;
         tempPWM = 255.0 * tempPWM;
         rightPWM = (int) tempPWM * tempPWMsign;
         
-        break
+        break;
       }
         
       case Coord_PD: // PD algorithm, target COORDINATES
