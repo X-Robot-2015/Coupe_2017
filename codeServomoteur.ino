@@ -442,7 +442,7 @@ int compteur_prev =0;
               distanceTarget = distanceTarget - 32768;
               
               distanceTargetTemp = (float)distanceTarget;
-              distanceTargetTemp = distanceTargetTemp * (float)cpr /((float) M_PI * (float) WheelDiameter);
+              distanceTargetTemp = distanceTargetTemp * (float)cpr /((float) m_pi * (float) WheelDiameter);
               distanceTarget = (long) distanceTargetTemp;
               
               angleTarget = 256*(long)cardArg[3] + (long)cardArg[2];
@@ -522,11 +522,11 @@ int compteur_prev =0;
               deltaForward = deltaForward - 32768;
  
               tempDelta = (float) deltaForward;
-              tempDelta = tempDelta * (float) cpr / ((float) M_PI * (float) leftWheelDiameter);
+              tempDelta = tempDelta * (float) cpr / ((float) m_pi * (float) leftWheelDiameter);
               deltaForwardLeft = (long) tempDelta;
                             
               tempDelta = (float) deltaForward;
-              tempDelta = tempDelta * (float) cpr / ((float) M_PI * (float) rightWheelDiameter);
+              tempDelta = tempDelta * (float) cpr / ((float) m_pi * (float) rightWheelDiameter);
               deltaForwardRight = (long) tempDelta;
  
               leftTarget = leftClicks + deltaForwardLeft;
