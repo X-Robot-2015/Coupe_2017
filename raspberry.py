@@ -10,9 +10,8 @@ finished = 1
 
 
 
-def aller(d,ang): ##distance en cm, angle en °, case6.
-	distance = d
-	angle = ang
+def aller(t): ##distance en cm, angle en °, case6.
+	distance,angle = t
 	distance += 32768
 	angle += 32768
 	distance=min(distance,256**2-1)
