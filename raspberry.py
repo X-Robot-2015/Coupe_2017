@@ -10,7 +10,7 @@ finished = 1
 
 
 
-def aller(t): ##distance en cm, angle en °, case6.
+def aller(t): ##distance en mm, angle en °, case6.
 	distance,angle = t
 	distance += 32768
 	angle += 32768
@@ -131,6 +131,8 @@ class execution(threading.Thread):
 					maxSpeed(command[1])
 				if command[0]==132:
 					maxAccel(command[1])
+				if command[0]==6:
+					aller(command[1])
 
 
 class serialRead(threading.Thread):
@@ -146,6 +148,13 @@ class serialRead(threading.Thread):
 					Targ.append(ord(ser.read()))
 				if ord(replyCommand) == 5:
 					finished = Targ[0];
+
+def test():
+	cmd(1,(300,400))
+	cmd(3,3140)
+	cmd(1,(300,400))
+	cmd(3,-3140)
+	cmd(6,(150,45))
 
 
 serialRead().start()

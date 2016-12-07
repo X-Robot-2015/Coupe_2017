@@ -399,11 +399,10 @@ int compteur_prev =0;
     //digitalWrite(Serial_Send, HIGH);
     //Serial.write(CARD_TYPE);
     //Serial.write(CARD_INDEX);
-    Serial.println(replyCommand);
     Serial.write(replyCommand);
-    Serial.write((unsigned char)(replyArgCount + 128));
+    Serial.write(replyArgCount);
     for (i = 0; i < replyArgCount; i++) Serial.write(replyArg[i]);
-    delay(240 + 60 * (int)replyArgCount);
+    //delay(240 + 60 * (int)replyArgCount);
     //digitalWrite(Serial_Send, LOW);
   }
  
@@ -737,11 +736,11 @@ int compteur_prev =0;
  
           case 5: // find out if the robot has arrived to its destination :: HasArrived() [RETURN: 1 arg, 1 var]
             {
-              replyCommand = 143;
+              replyCommand = 5;
               replyArgCount = 1;
  
-              if (hasArrived == true) replyArg[0] = 129; // modifié par Raphaël
-              else replyArg[0] = 128; // modifié par Raphaël
+              if (hasArrived == true) replyArg[0] = 1; // modifié par Raphaël
+              else replyArg[0] = 0; // modifié par Raphaël
  
               sendData();
  
