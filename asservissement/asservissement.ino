@@ -471,6 +471,8 @@ int compteur_prev =0;
             {
               leftTarget = leftClicks;
               rightTarget = rightClicks;
+              angleTarget = rightClicks-leftClicks ;
+              distanceTarget = (leftCLicks+rightClicks)/2;
               break;
             }
  
