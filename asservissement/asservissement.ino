@@ -154,6 +154,7 @@ int compteur_prev =0;
   float angleTargetTemp;
   float distanceTargetTemp;
 
+ void incr_right(){
  encoder_D_B = digitalRead(pin_D_B);
  if(encoder_D_B) {
         // B is high so clockwise
@@ -164,9 +165,9 @@ int compteur_prev =0;
       else {
         // B is low so counter-clockwise      
      
-        rightClicks --;    }}
+        rightClicks --;    }
 
-
+}
   void incr_left(){
  encoder_G_B = digitalRead(pin_G_B);
  
