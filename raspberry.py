@@ -3,12 +3,11 @@
 import serial
 import threading,time
 
-ser = serial.Serial("/dev/ttyACM0",9600,timeout = 1)
+move = serial.Serial("/dev/moteur_robot_2014",9600,timeout = 1)
+actionneur = serial.Serial("/dev/actionneur_robot_2014",9600,timeout = 1)
 
 l=[]
 finished = 1
-
-
 
 def aller(t): ##distance en mm, angle en °, case6.
 	distance,angle = t
@@ -23,7 +22,7 @@ def aller(t): ##distance en mm, angle en °, case6.
 	Arg3 = angle/256
 	Arg2 = angle%256
 
-	ser.write("11"+chr(6)+chr(4) +chr(Arg0) +chr(Arg1) +chr(Arg2) +chr(Arg3))
+	move.write("11"+chr(6)+chr(4) +chr(Arg0) +chr(Arg1) +chr(Arg2) +chr(Arg3))
 
 def cmd(f,args):
 	t=(f,args)
@@ -44,10 +43,10 @@ def avancer(t): ##case 1
 	Arg3 = speed/256
 	#Arg2 = speed - 256*Arg3
 	Arg2 = speed %256
-	ser.write("11"+chr(1)+chr(4)+chr(Arg0)+chr(Arg1)+chr(Arg2)+chr(Arg3))
+	move.write("11"+chr(1)+chr(4)+chr(Arg0)+chr(Arg1)+chr(Arg2)+chr(Arg3))
 
 def r(): #case2
-	ser.write("11"+chr(2)+chr(0))
+	move.write("11"+chr(2)+chr(0))
 
 def tourner(angle): #case3
 	angle += 32768
@@ -57,7 +56,7 @@ def tourner(angle): #case3
 		angle = 0
 	Arg1 = angle/256
 	Arg0 = angle - 256*Arg1
-	ser.write("11"+chr(3)+chr(2)+chr(Arg0)+chr(Arg1))
+	move.write("11"+chr(3)+chr(2)+chr(Arg0)+chr(Arg1))
 
 def setNewTarget(t): #case4, x et y en clicks
 	x,y=t
@@ -75,10 +74,10 @@ def setNewTarget(t): #case4, x et y en clicks
 		y = 0
 	Arg3 = y/256
 	Arg2 = y - 256*Arg3
-	ser.write("11"+chr(4)+chr(4)+chr(Arg0)+chr(Arg1)+chr(Arg2)+chr(Arg3))
+	move.write("11"+chr(4)+chr(4)+chr(Arg0)+chr(Arg1)+chr(Arg2)+chr(Arg3))
 
 def hasArrived(): #case5
-	ser.write("11"+chr(5)+chr(0))
+	move.write("11"+chr(5)+chr(0))
 
 def maxSpeed(speed): #case 131
 
@@ -91,7 +90,7 @@ def maxSpeed(speed): #case 131
 	Arg1 = speed/256
 
 	Arg0 = speed %256
-	ser.write("11"+chr(131)+chr(2)+chr(Arg0)+chr(Arg1))
+	move.write("11"+chr(131)+chr(2)+chr(Arg0)+chr(Arg1))
 
 def maxAccel(accel): #case 132
 
@@ -104,14 +103,14 @@ def maxAccel(accel): #case 132
 	Arg1 = accel/256
 
 	Arg0 = accel %256
-	ser.write("11"+chr(132)+chr(2)+chr(Arg0)+chr(Arg1))
+	move.write("11"+chr(132)+chr(2)+chr(Arg0)+chr(Arg1))
 
 def readPos(): #case140
-	ser.write("11"+chr(140)+chr(0))
+	move.write("11"+chr(140)+chr(0))
 
 class execution(threading.Thread):
 	def run(self):
-		global finished #il faut préciser qu'on se sert se la varaible globale
+		global finished #il faut préciser qu'on se sert de la varaible globale
 		while True:
 			time.sleep(3)
 			hasArrived()
@@ -140,12 +139,12 @@ class serialRead(threading.Thread):
 		global finished
 		while True:
 			# time.sleep(.1) pas nécessaire car ser.read() attend 1 une seconde si il n'y a rien à lire
-			replyCommand = ser.read()  #on identifie à quelle commande correspond la réponse
+			replyCommand = move.read()  #on identifie à quelle commande correspond la réponse
 			if replyCommand != '':
-				replyArgCount = ord(ser.read())  # une commande peut éventuellement renovyer plusieurs valeurs
+				replyArgCount = ord(move.read())  # une commande peut éventuellement renovyer plusieurs valeurs
 				Targ = []
 				for i in range(replyArgCount):
-					Targ.append(ord(ser.read()))
+					Targ.append(ord(move.read()))
 				if ord(replyCommand) == 5:
 					finished = Targ[0];
 
