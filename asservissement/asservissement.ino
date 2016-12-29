@@ -71,10 +71,7 @@ int compteur_prev =0;
  
   // ### UART communication variables
   // receive
-  unsigned char CARD_TYPE = 128;
-  unsigned char CARD_INDEX = 128;
   unsigned char cardType, cardIndex, cardCommand, cardArgCount;
-  unsigned char cardArg[16];
   // send
   unsigned char replyCommand, replyArgCount;
   unsigned char replyArg[16];
@@ -243,9 +240,8 @@ int compteur_prev =0;
     attachInterrupt(Right_INT, incr_right, FALLING);
     attachInterrupt(Left_INT, incr_left, FALLING);
     
-    // beginning the UART communication
-    Serial.begin(UART_BAUD);
-    Serial.setTimeout(1000);
+    
+    Serial.setTimeout(1000); // nécessaire
  
     PIDmode = Coord_PD;
  
