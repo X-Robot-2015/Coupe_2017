@@ -116,8 +116,8 @@ int compteur_prev =0;
   long leftDer, rightDer;
   long newLeftTarget, newRightTarget;
  
-  const int kPcoord = 5; // WARNING: the value is divided by 1024
-  const int kDcoord = 600; // WARNING: the value is divided by 1024
+  const int kPcoord = 30; //modifie par Allen d'apres MC_Beta // WARNING: the value is divided by 1024
+  const int kDcoord = 1000; //modifie par Allen d'apres MC_Beta // WARNING: the value is divided by 1024
  
   // speed PID
   long leftSpeed, rightSpeed;
@@ -129,8 +129,8 @@ int compteur_prev =0;
  
   unsigned long currentTime, lastTime, deltaTime;
  
-  const int kPspeed = 25; // WARNING: the value is divided by 1024
-  const int kDspeed = 1000; // WARNING: the value is divided by 1024
+  const int kPspeed = 20; //modifie par Allen d'apres MC_Beta // WARNING: the value is divided by 1024
+  const int kDspeed = 2500; //modifie par Allen d'apres MC_Beta // WARNING: the value is divided by 1024
   const int kIspeed = 1; // WARNING: the value is divided by 1024
  
   const long maxSpeedInt = 1024 / kIspeed + 1;
@@ -257,8 +257,8 @@ int compteur_prev =0;
     }
     else
     {
-      maxLeftPWM = 180;
-      maxRightPWM = 180;
+      maxLeftPWM = 160; //modifie par Allen d'apres MC_Beta
+      maxRightPWM = 160; //modifie par Allen d'apres MC_Beta
     }
 
  
@@ -547,6 +547,7 @@ int compteur_prev =0;
  
               maxLeftPWM = 128 + 36 * abs(leftTargetSpeed + rightTargetSpeed) / 40;
               maxRightPWM = maxLeftPWM;
+              lastPWM = maxLeftPWM; //modifie par Allen d'apres MC_Beta//
  
               if (abs(deltaForwardLeft + deltaForwardRight) > 20000) errorThresholdSlow = (long) (cpr / 2);
               else errorThresholdSlow = abs(deltaForwardLeft + deltaForwardRight) / 4;
@@ -610,6 +611,7 @@ int compteur_prev =0;
  
               maxLeftPWM = 128 + 36 * (abs(leftTargetSpeed) + abs(rightTargetSpeed)) / 40;
               maxRightPWM = maxLeftPWM;
+              lastPWM = maxLeftPWM; //modifie par Allen d'apres MC_Beta//
  
               if (abs(deltaForward) > 10000) errorThresholdSlow = (long) (cpr / 2);
               else errorThresholdSlow = abs(deltaForward) / 2;
