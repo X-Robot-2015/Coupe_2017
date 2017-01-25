@@ -474,6 +474,14 @@ int compteur_prev =0;
               rightTarget = rightClicks;
               break;
             }
+            
+          case 999: //reset destination for case 6
+            {
+              angleTarget = 0;
+              leftClicks = 0;
+              DistanceTarget = 0;
+              RightCLicks = 0;
+                
  
           case 131: // set the maximum speed in clicks/second :: SetMaxSpeedC() [2 args, 1 var]
             {
