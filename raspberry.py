@@ -47,6 +47,9 @@ def avancer(t): ##case 1
 
 def r(): #case2
 	move.write("11"+chr(2)+chr(0))
+	
+def re(): #case999
+	move.write("11"+chr(999)+chr(0))
 
 def tourner(angle): #case3
 	angle += 32768
