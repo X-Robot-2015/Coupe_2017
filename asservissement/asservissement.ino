@@ -479,8 +479,8 @@ int compteur_prev =0;
             {
               angleTarget = 0;
               leftClicks = 0;
-              DistanceTarget = 0;
-              RightCLicks = 0;
+              distanceTarget = 0;
+              rightClicks = 0;
                 
  
           case 131: // set the maximum speed in clicks/second :: SetMaxSpeedC() [2 args, 1 var]
