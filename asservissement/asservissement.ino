@@ -107,6 +107,7 @@ int compteur_prev =0;
   long distanceTarget, angleTarget;
   long distanceDer, angleDer;
   long lastErreurAngle, lastErreurDistance;
+  long distanceInt, angleInt;
   
  
   // coordinate PID
@@ -118,6 +119,7 @@ int compteur_prev =0;
  
   const int kPcoord = 5; // WARNING: the value is divided by 1024
   const int kDcoord = 600; // WARNING: the value is divided by 1024
+  const int kIcoord = 10;
  
   // speed PID
   long leftSpeed, rightSpeed;
@@ -862,11 +864,14 @@ int compteur_prev =0;
         distanceDer = erreurDistance - lastErreurDistance;
         angleDer = erreurAngle - lastErreurAngle;
         
+        distanceInt += erreurDistance;
+        angleInt += erreurAngle
+        
         lastErreurDistance = erreurDistance;
         lastErreurAngle = erreurAngle;
         
-        leftPWM = (kPcoord * (erreurDistance - erreurAngle) + kDcoord * (distanceDer - angleDer) ) / 1024;
-        rightPWM = (kPcoord * (erreurDistance + erreurAngle) + kDcoord * (distanceDer + angleDer) ) / 1024;
+        leftPWM = (kPcoord * (erreurDistance - erreurAngle) + kDcoord * (distanceDer - angleDer) + kIcoord *(distanceInt - angleInt) ) / 1024;
+        rightPWM = (kPcoord * (erreurDistance + erreurAngle) + kDcoord * (distanceDer + angleDer) + kIcoord*(distanceInt + angleInt) ) / 1024;
         
         // compensating the non-linear dependency speed = f(PWM_Value)
         tempPWM = (float) abs(leftPWM) / 255.0;
