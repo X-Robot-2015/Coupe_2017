@@ -448,10 +448,10 @@ int compteur_prev =0;
               angleTargetTemp = angleTargetTemp*trackWidth*cpr/(180*wheelDiameter);
               angleTarget = (long) angleTargetTemp;
               
-              if(angleTarget!=0){
-                angleTarget = (long) 180/m_pi*atan(2*tan(angleTarget*m_pi/180)/(1-pow(tan(angleTarget*m_pi/180),2)));
-                distanceTarget = (long) distanceTarget*cos(angleTargetTemp*m_pi/180)*angleTarget*m_pi/180/sin(angleTarget*m_pi/180);
-                }
+              //if(angleTarget!=0){
+                //angleTarget = (long) 180/m_pi*atan(2*tan(angleTarget*m_pi/180)/(1-pow(tan(angleTarget*m_pi/180),2)));
+                //distanceTarget = (long) distanceTarget*cos(angleTargetTemp*m_pi/180)*angleTarget*m_pi/180/sin(angleTarget*m_pi/180);
+                //}
               
               
               PIDmode = New_Coord_PD;
