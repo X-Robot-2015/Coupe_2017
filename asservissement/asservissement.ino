@@ -347,6 +347,42 @@ int compteur_prev =0;
     if (motor == LEFT) analogWrite(PWM_L, speed);
     else if (motor == RIGHT) analogWrite(PWM_R, speed);
   }
+
+  void Asserv()
+  {
+        erreurDistance = distanceTarget - (leftClicks+rightClicks)/2;
+        erreurAngle = angleTarget - (rightClicks-leftClicks);
+        
+        distanceDer = erreurDistance - lastErreurDistance;
+        angleDer = erreurAngle - lastErreurAngle;
+        
+        distanceInt += erreurDistance;
+        angleInt += erreurAngle;
+        
+        lastErreurDistance = erreurDistance;
+        lastErreurAngle = erreurAngle;
+        
+        leftPWM = (kPcoord * (erreurDistance - erreurAngle) + kDcoord * (distanceDer - angleDer) + kIcoord *(distanceInt - angleInt) ) / 1024;
+        rightPWM = (kPcoord * (erreurDistance + erreurAngle) + kDcoord * (distanceDer + angleDer) + kIcoord*(distanceInt + angleInt) ) / 1024;
+        
+        // compensating the non-linear dependency speed = f(PWM_Value)
+        tempPWM = (float) abs(leftPWM) / 255.0;
+        tempPWMsign = leftPWM / abs(leftPWM);
+        tempPWM = pow(tempPWM, 0.2);
+        tempPWM = 255.0 * tempPWM;
+        leftPWM = (int) tempPWM * tempPWMsign;
+ 
+        tempPWM = (float) abs(rightPWM) / 255.0;
+        tempPWMsign = rightPWM / abs(rightPWM);
+        tempPWM = pow(tempPWM, 0.2);
+        tempPWM = 255.0 * tempPWM;
+        rightPWM = (int) tempPWM * tempPWMsign;
+        
+        
+        if(erreurAngle < 10 && checkSeq){
+           distanceTarget = distanceTarget2;
+         }
+  }
  /*
   void setPwmFreq(int pin, int divisor) // function used to override the PWM frequency setting used by default by Arduino
   {
@@ -872,38 +908,7 @@ int compteur_prev =0;
     {
       case New_Coord_PD:
       {
-        erreurDistance = distanceTarget - (leftClicks+rightClicks)/2;
-        erreurAngle = angleTarget - (rightClicks-leftClicks);
-        
-        distanceDer = erreurDistance - lastErreurDistance;
-        angleDer = erreurAngle - lastErreurAngle;
-        
-        distanceInt += erreurDistance;
-        angleInt += erreurAngle;
-        
-        lastErreurDistance = erreurDistance;
-        lastErreurAngle = erreurAngle;
-        
-        leftPWM = (kPcoord * (erreurDistance - erreurAngle) + kDcoord * (distanceDer - angleDer) + kIcoord *(distanceInt - angleInt) ) / 1024;
-        rightPWM = (kPcoord * (erreurDistance + erreurAngle) + kDcoord * (distanceDer + angleDer) + kIcoord*(distanceInt + angleInt) ) / 1024;
-        
-        // compensating the non-linear dependency speed = f(PWM_Value)
-        tempPWM = (float) abs(leftPWM) / 255.0;
-        tempPWMsign = leftPWM / abs(leftPWM);
-        tempPWM = pow(tempPWM, 0.2);
-        tempPWM = 255.0 * tempPWM;
-        leftPWM = (int) tempPWM * tempPWMsign;
- 
-        tempPWM = (float) abs(rightPWM) / 255.0;
-        tempPWMsign = rightPWM / abs(rightPWM);
-        tempPWM = pow(tempPWM, 0.2);
-        tempPWM = 255.0 * tempPWM;
-        rightPWM = (int) tempPWM * tempPWMsign;
-        
-        
-        if(erreurAngle < 10 && checkSeq){
-           distanceTarget = distanceTarget2;
-         }
+        Asserv();
         
         break;
       }
