@@ -94,6 +94,7 @@ long intDeltaAngle;
 float deltaAngle, deltaAngleLeft, deltaAngleRight;
 
 bool hasArrived;
+bool checkSeq;
 
 // ### PID variables ###
 int PIDmode;
@@ -104,7 +105,7 @@ long errorThresholdSlow, errorThresholdStop;
 // new coordinate PD
 
 long erreurDistance, erreurAngle;
-long distanceTarget, angleTarget;
+long distanceTarget, angleTarget; distanceTarget2;
 long distanceDer, angleDer;
 long lastErreurAngle, lastErreurDistance;
 long distanceInt, angleInt;
@@ -464,6 +465,7 @@ void TurnRad(float D_angle, long vitesse) //case3
 }
 
 //PID functions//
+
 void New_Coord_PD()
 {
   erreurDistance = distanceTarget - (leftClicks + rightClicks) / 2;
@@ -493,6 +495,10 @@ void New_Coord_PD()
   tempPWM = pow(tempPWM, 0.2);
   tempPWM = 255.0 * tempPWM;
   rightPWM = (int) tempPWM * tempPWMsign;
+  
+  if(erreurAngle < 10 && checkSeq){
+    distanceTarget = distanceTarget2;
+  }
 }
 
 void Coord_PD()
@@ -694,6 +700,8 @@ void doSerial() // UART processing function
 
             PIDmode = New_Coord_PD;
             PIDautoswitch = false;
+            
+            checkSeq = false;
           }
           
           case 999: //reset destination for case 6
@@ -703,6 +711,35 @@ void doSerial() // UART processing function
               distanceTarget = 0;
               rightClicks = 0;
             }
+      
+          
+        case 7:
+          {
+            leftClicks = 0;
+            rightClicks = 0; // réinitialiser les compteurs
+            
+            distanceTarget = 0;
+
+            distanceTarget2 = 256 * (long)cardArg[1] + (long)cardArg[0];
+            distanceTarget2 = distanceTarget2 - 32768;
+
+            distanceTargetTemp = (float)distanceTarget2;
+            distanceTargetTemp = distanceTargetTemp * (float)cpr / ((float) m_pi * (float) wheelDiameter);
+            distanceTarget2 = (long) distanceTargetTemp;
+
+            angleTarget = 256 * (long)cardArg[3] + (long)cardArg[2];
+            angleTarget = angleTarget - 32768;
+
+            angleTargetTemp = (float)angleTarget;
+            angleTargetTemp = angleTargetTemp * trackWidth * cpr / (180 * wheelDiameter);
+            angleTarget = (long) angleTargetTemp;
+            
+            PIDmode = New_Coord_PD;
+            PIDautoswitch = false;
+            
+            checkSeq = true;
+            
+          }
 
         case 4: // set new destinations in CLICKS :: SetNewTarget() [4 args, 2 vars]
           {
@@ -1004,7 +1041,7 @@ void doSerial() // UART processing function
     //############################## PID computing ###############################//
     //############################################################################//
     switch (PIDmode)
-    {
+    {        
       case New_Coord_PD:
         {
           New_Coord_PD();
