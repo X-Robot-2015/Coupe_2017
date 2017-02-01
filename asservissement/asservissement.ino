@@ -348,6 +348,26 @@ int compteur_prev =0;
     else if (motor == RIGHT) analogWrite(PWM_R, speed);
   }
 
+  void setParameters(long dist, long ang)
+  {
+    distanceTarget = 0;
+    distanceTarget2 = dist;
+    angleTarget = ang;
+
+    distanceTargetTemp = (float)distanceTarget2;
+    distanceTargetTemp = distanceTargetTemp * (float)cpr / ((float) m_pi * (float) wheelDiameter);
+    distanceTarget2 = (long) distanceTargetTemp;
+
+    angleTargetTemp = (float)angleTarget;
+    angleTargetTemp = angleTargetTemp * trackWidth * cpr / (180 * wheelDiameter);
+    angleTarget = (long) angleTargetTemp;
+            
+    PIDmode = New_Coord_PD;
+    PIDautoswitch = false;
+            
+    checkSeq = true;
+  }
+
   void Asserv()
   {
         erreurDistance = distanceTarget - (leftClicks+rightClicks)/2;
@@ -486,27 +506,14 @@ int compteur_prev =0;
           {
             leftClicks = 0;
             rightClicks = 0; // réinitialiser les compteurs
-            
-            distanceTarget = 0;
 
             distanceTarget2 = 256 * (long)cardArg[1] + (long)cardArg[0];
             distanceTarget2 = distanceTarget2 - 32768;
-
-            distanceTargetTemp = (float)distanceTarget2;
-            distanceTargetTemp = distanceTargetTemp * (float)cpr / ((float) m_pi * (float) wheelDiameter);
-            distanceTarget2 = (long) distanceTargetTemp;
-
+            
             angleTarget = 256 * (long)cardArg[3] + (long)cardArg[2];
             angleTarget = angleTarget - 32768;
-
-            angleTargetTemp = (float)angleTarget;
-            angleTargetTemp = angleTargetTemp * trackWidth * cpr / (180 * wheelDiameter);
-            angleTarget = (long) angleTargetTemp;
             
-            PIDmode = New_Coord_PD;
-            PIDautoswitch = false;
-            
-            checkSeq = true;
+            setParameters(distanceTarget2,angleTarget);
             
           }
             
