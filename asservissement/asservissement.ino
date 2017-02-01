@@ -198,12 +198,12 @@ int compteur_prev =0;
     
     
     // Robot construction values
-    cpr = 5000; // number of counts per revolution of the encoder
-    wheelDiameter = 72; // ENCODER wheel diameter in milimeters
-    leftWheelDiameter = 72; // LEFT ENCODER wheel diameter in milimeters
-    rightWheelDiameter = 72; // RIGHT ENCODER wheel diameter in milimeters
-    trackWidth = 314; // the distance between the wheels in milimeters
-    motorWheelDiameter = 98; // MOTOR wheel diameter in milimeters
+    cpr = 1216; // number of counts per revolution of the encoder
+    wheelDiameter = 75; // ENCODER wheel diameter in milimeters
+    leftWheelDiameter = 75; // LEFT ENCODER wheel diameter in milimeters
+    rightWheelDiameter = 75; // RIGHT ENCODER wheel diameter in milimeters
+    trackWidth = 225; // the distance between the wheels in milimeters
+    motorWheelDiameter = 75; // MOTOR wheel diameter in milimeters
  
     // configuring I/O digital ports
     //pinMode(Left_A, INPUT);  // encoder A left input
