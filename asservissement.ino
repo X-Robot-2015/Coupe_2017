@@ -695,6 +695,14 @@ void doSerial() // UART processing function
             PIDmode = New_Coord_PD;
             PIDautoswitch = false;
           }
+          
+          case 999: //reset destination for case 6
+            {
+              angleTarget = 0;
+              leftClicks = 0;
+              distanceTarget = 0;
+              rightClicks = 0;
+            }
 
         case 4: // set new destinations in CLICKS :: SetNewTarget() [4 args, 2 vars]
           {
