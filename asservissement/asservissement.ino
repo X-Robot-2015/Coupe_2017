@@ -74,9 +74,9 @@ int compteur_prev =0;
   unsigned char cardType, cardIndex, cardCommand, cardArgCount;
   // send
   unsigned char replyCommand, replyArgCount;
+  unsigned char cardArg[16];
   unsigned char replyArg[16];
  
-  bool doingSerial = false;
  
   // current location variables
   volatile long leftClicks, rightClicks;
@@ -381,391 +381,372 @@ int compteur_prev =0;
     }
   }
   */
-  bool checkValidData() // checking if the card type and index are the correct ones
-  {
-    if (cardType == CARD_TYPE && cardIndex == CARD_INDEX) return true;
-    else
-    {
-      delay(32);
-      while (Serial.available() > 0) Serial.read();
-      return false;
-    }
-  }
- 
+  
   void sendData()
   {
-    //digitalWrite(Serial_Send, HIGH);
-    //Serial.write(CARD_TYPE);
-    //Serial.write(CARD_INDEX);
+    
     Serial.write(replyCommand);
     Serial.write(replyArgCount);
     for (i = 0; i < replyArgCount; i++) Serial.write(replyArg[i]);
-    //delay(240 + 60 * (int)replyArgCount);
-    //digitalWrite(Serial_Send, LOW);
+    
   }
  
   void doSerial() // UART processing function
   {
     
-    if (Serial.available() >= 4 && !doingSerial)
+    if (Serial.available() >= 4)
     {
-
-      doingSerial = true;
       //detachInterrupt(Left_INT);
       //detachInterrupt(Right_INT);
  
       digitalWrite(Status_Red, HIGH);
- 
-      cardType = Serial.read();
-      cardIndex = Serial.read();
+
       cardCommand = Serial.read();
       cardArgCount = Serial.read(); 
-      if (true)
+      
+      while (Serial.available() < cardArgCount) {};
+      
+      for (i = 0; i < cardArgCount; i++)
       {
-        while (Serial.available() < cardArgCount) {};
-        
-        for (i = 0; i < cardArgCount; i++)
-        {
-          cardArg[i] = Serial.read();
-        }
+        cardArg[i] = Serial.read();
+      }
  
-        switch (cardCommand)
-        {
-          case 6: // set new detination in Position (distance,angle) in mm and degree.
-            {
-              leftClicks = 0;
-              rightClicks = 0; // réinitialiser les compteurs
-              
-              distanceTarget = 256 * (long)cardArg[1] + (long)cardArg[0];
-              distanceTarget = distanceTarget - 32768;
-              
-              distanceTargetTemp = (float)distanceTarget;
-              distanceTargetTemp = distanceTargetTemp * (float)cpr /((float) m_pi * (float) wheelDiameter);
-              distanceTarget = (long) distanceTargetTemp;
-              
-              angleTarget = 256*(long)cardArg[3] + (long)cardArg[2];
-              angleTarget = angleTarget - 32768;
-              
-              angleTargetTemp = (float)angleTarget;
-              angleTargetTemp = angleTargetTemp*trackWidth*cpr/(180*wheelDiameter);
-              angleTarget = (long) angleTargetTemp;
-              
-              //if(angleTarget!=0){
-                //angleTarget = (long) 180/m_pi*atan(2*tan(angleTarget*m_pi/180)/(1-pow(tan(angleTarget*m_pi/180),2)));
-                //distanceTarget = (long) distanceTarget*cos(angleTargetTemp*m_pi/180)*angleTarget*m_pi/180/sin(angleTarget*m_pi/180);
-                //}
-              
-              
-              PIDmode = New_Coord_PD;
-              PIDautoswitch = false;
-            }
-              
-          case 4: // set new destinations in CLICKS :: SetNewTarget() [4 args, 2 vars]
-            {
-              newLeftTarget = 256 * (long)cardArg[1] + (long)cardArg[0];
-              newRightTarget = 256 * (long)cardArg[3] + (long)cardArg[2];
- 
-              leftTarget = newLeftTarget - 32768;
-              rightTarget = newRightTarget - 32768;
-              break;
-            }
- 
-          case 2: // reset destination (destination = current position) :: ResetTarget() [0 args, 0 vars]
-            {
-              leftTarget = leftClicks;
-              rightTarget = rightClicks;
-              break;
-            }
+      switch (cardCommand)
+      {
+        case 6: // set new detination in Position (distance,angle) in mm and degree.
+          {
+            leftClicks = 0;
+            rightClicks = 0; // réinitialiser les compteurs
             
-          case 999: //reset destination for case 6
-            {
-              angleTarget = 0;
-              leftClicks = 0;
-              distanceTarget = 0;
-              rightClicks = 0;
-                
+            distanceTarget = 256 * (long)cardArg[1] + (long)cardArg[0];
+            distanceTarget = distanceTarget - 32768;
+            
+            distanceTargetTemp = (float)distanceTarget;
+            distanceTargetTemp = distanceTargetTemp * (float)cpr /((float) m_pi * (float) wheelDiameter);
+            distanceTarget = (long) distanceTargetTemp;
+            
+            angleTarget = 256*(long)cardArg[3] + (long)cardArg[2];
+            angleTarget = angleTarget - 32768;
+            
+            angleTargetTemp = (float)angleTarget;
+            angleTargetTemp = angleTargetTemp*trackWidth*cpr/(180*wheelDiameter);
+            angleTarget = (long) angleTargetTemp;
+            
+            //if(angleTarget!=0){
+              //angleTarget = (long) 180/m_pi*atan(2*tan(angleTarget*m_pi/180)/(1-pow(tan(angleTarget*m_pi/180),2)));
+              //distanceTarget = (long) distanceTarget*cos(angleTargetTemp*m_pi/180)*angleTarget*m_pi/180/sin(angleTarget*m_pi/180);
+              //}
+            
+            
+            PIDmode = New_Coord_PD;
+            PIDautoswitch = false;
+          }
+            
+        case 4: // set new destinations in CLICKS :: SetNewTarget() [4 args, 2 vars]
+          {
+            newLeftTarget = 256 * (long)cardArg[1] + (long)cardArg[0];
+            newRightTarget = 256 * (long)cardArg[3] + (long)cardArg[2];
  
-          case 131: // set the maximum speed in clicks/second :: SetMaxSpeedC() [2 args, 1 var]
-            {
-              maxSpeedC = 256 * (int)cardArg[1] + (int)cardArg[0];
-              break;
-            }
+            leftTarget = newLeftTarget - 32768;
+            rightTarget = newRightTarget - 32768;
+            break;
+          }
  
-          case 132: // set the maximum acceleration in clicks/second^2 :: SetMaxAccC() [2 args, 1 var]
-            {
-              maxAccC = 256 * (int)cardArg[1] + (int)cardArg[0];
-              break;
-            }
+        case 2: // reset destination (destination = current position) :: ResetTarget() [0 args, 0 vars]
+          {
+            leftTarget = leftClicks;
+            rightTarget = rightClicks;
+            break;
+          }
+          
+        case 999: //reset destination for case 6
+          {
+            angleTarget = 0;
+            leftClicks = 0;
+            distanceTarget = 0;
+            rightClicks = 0;
+              
  
-          case 133: // set the track width (the distance between the left and right wheels) in milimeters :: SetTrackWidth() [2 args, 1 var]
-            {
-              trackWidth = 256 * (int)cardArg[1] + (int)cardArg[0];
-              break;
-            }
+        case 131: // set the maximum speed in clicks/second :: SetMaxSpeedC() [2 args, 1 var]
+          {
+            maxSpeedC = 256 * (int)cardArg[1] + (int)cardArg[0];
+            break;
+          }
  
-          case 134: // set the number of clicks per revolution :: SetCPR() [2 args, 1 var]
-            {
-              cpr = 256 * (int)cardArg[1] + (int)cardArg[0];
-              break;
-            }
+        case 132: // set the maximum acceleration in clicks/second^2 :: SetMaxAccC() [2 args, 1 var]
+          {
+            maxAccC = 256 * (int)cardArg[1] + (int)cardArg[0];
+            break;
+          }
  
-          case 135: // set the wheel diameter in millimeters :: SetWheelDiameter() [3 args, 2 var]
-            {
-              if (cardArg[0] == 0) leftWheelDiameter = 256 * (int)cardArg[2] + (int)cardArg[1];
-              else rightWheelDiameter = 256 * (int)cardArg[2] + (int)cardArg[1];
-              break;
-            }
+        case 133: // set the track width (the distance between the left and right wheels) in milimeters :: SetTrackWidth() [2 args, 1 var]
+          {
+            trackWidth = 256 * (int)cardArg[1] + (int)cardArg[0];
+            break;
+          }
  
-          case 1: // go straight forward/backward for a distance expressed in millimeters :: GoStraigth() [4 args, 2 var] -- old [2 args, 1 var]
-            {
-              /* OLD FUNCTION - 2 args, 1 var
-                deltaForward = 256 * (long)cardArg[1] + (long)cardArg[0];
-                deltaForward = deltaForward - 32768;
+        case 134: // set the number of clicks per revolution :: SetCPR() [2 args, 1 var]
+          {
+            cpr = 256 * (int)cardArg[1] + (int)cardArg[0];
+            break;
+          }
  
-                tempDelta = (float) deltaForward;
-                tempDelta = tempDelta * (float) cpr / ((float) M_PI * (float) wheelDiameter);
-                deltaForward = (long) tempDelta;
+        case 135: // set the wheel diameter in millimeters :: SetWheelDiameter() [3 args, 2 var]
+          {
+            if (cardArg[0] == 0) leftWheelDiameter = 256 * (int)cardArg[2] + (int)cardArg[1];
+            else rightWheelDiameter = 256 * (int)cardArg[2] + (int)cardArg[1];
+            break;
+          }
  
-                leftTarget = leftClicks + deltaForward;
-                rightTarget = rightClicks + deltaForward;
-                break;
-              */
+        case 1: // go straight forward/backward for a distance expressed in millimeters :: GoStraigth() [4 args, 2 var] -- old [2 args, 1 var]
+          {
+            /* OLD FUNCTION - 2 args, 1 var
               deltaForward = 256 * (long)cardArg[1] + (long)cardArg[0];
               deltaForward = deltaForward - 32768;
  
               tempDelta = (float) deltaForward;
-              tempDelta = tempDelta * (float) cpr / ((float) m_pi * (float) leftWheelDiameter);
-              deltaForwardLeft = (long) tempDelta;
-                            
-              tempDelta = (float) deltaForward;
-              tempDelta = tempDelta * (float) cpr / ((float) m_pi * (float) rightWheelDiameter);
-              deltaForwardRight = (long) tempDelta;
+              tempDelta = tempDelta * (float) cpr / ((float) M_PI * (float) wheelDiameter);
+              deltaForward = (long) tempDelta;
  
-              leftTarget = leftClicks + deltaForwardLeft;
-              rightTarget = rightClicks + deltaForwardRight;
- 
-              leftTargetSpeed = 256 * (long)cardArg[3] + (long)cardArg[2];
-              leftTargetSpeed = leftTargetSpeed - 32768;
-              rightTargetSpeed = leftTargetSpeed;
-              
-              leftTargetSpeed = leftTargetSpeed * (long) cpr;
-              leftTargetSpeed = leftTargetSpeed * (long) motorWheelDiameter;
-              leftTargetSpeed = leftTargetSpeed / 60000;
-              leftTargetSpeed = leftTargetSpeed / (long) leftWheelDiameter;
- 
-              rightTargetSpeed = rightTargetSpeed * (long) cpr;
-              rightTargetSpeed = rightTargetSpeed * (long) motorWheelDiameter;
-              rightTargetSpeed = rightTargetSpeed / 60000;
-              rightTargetSpeed = rightTargetSpeed / (long) rightWheelDiameter;
- 
-              leftBigPWM = 0;
-              rightBigPWM = 0;
- 
-              maxLeftPWM = 128 + 36 * abs(leftTargetSpeed + rightTargetSpeed) / 40;
-              maxRightPWM = maxLeftPWM;
- 
-              if (abs(deltaForwardLeft + deltaForwardRight) > 20000) errorThresholdSlow = (long) (cpr / 2);
-              else errorThresholdSlow = abs(deltaForwardLeft + deltaForwardRight) / 4;
- 
-              PIDmode = Speed_PD;
-              PIDautoswitch = true;
- 
+              leftTarget = leftClicks + deltaForward;
+              rightTarget = rightClicks + deltaForward;
               break;
-            }
+            */
+            deltaForward = 256 * (long)cardArg[1] + (long)cardArg[0];
+            deltaForward = deltaForward - 32768;
  
-          case 3: // turn around an angle expressed in radians (en millièmes de radians exactement):: TurnRad() [4 args, 2 var] -- old [2 args, 1 var]
-            {
-              /* OLD FUNCTION - 2 args, 1 var
-                intDeltaAngle = 256 * (long)cardArg[1] + (long)cardArg[0];
-                intDeltaAngle = intDeltaAngle - 32768;
+            tempDelta = (float) deltaForward;
+            tempDelta = tempDelta * (float) cpr / ((float) m_pi * (float) leftWheelDiameter);
+            deltaForwardLeft = (long) tempDelta;
+                          
+            tempDelta = (float) deltaForward;
+            tempDelta = tempDelta * (float) cpr / ((float) m_pi * (float) rightWheelDiameter);
+            deltaForwardRight = (long) tempDelta;
  
-                deltaAngle = (float) intDeltaAngle / (float) 1000;
+            leftTarget = leftClicks + deltaForwardLeft;
+            rightTarget = rightClicks + deltaForwardRight;
  
-                deltaAngle = deltaAngle * (float) trackWidth * (float) cpr;
-                deltaAngle = deltaAngle / ((float) 2 * m_pi * (float) wheelDiameter);
+            leftTargetSpeed = 256 * (long)cardArg[3] + (long)cardArg[2];
+            leftTargetSpeed = leftTargetSpeed - 32768;
+            rightTargetSpeed = leftTargetSpeed;
+            
+            leftTargetSpeed = leftTargetSpeed * (long) cpr;
+            leftTargetSpeed = leftTargetSpeed * (long) motorWheelDiameter;
+            leftTargetSpeed = leftTargetSpeed / 60000;
+            leftTargetSpeed = leftTargetSpeed / (long) leftWheelDiameter;
  
-                deltaForward = (long) deltaAngle;
+            rightTargetSpeed = rightTargetSpeed * (long) cpr;
+            rightTargetSpeed = rightTargetSpeed * (long) motorWheelDiameter;
+            rightTargetSpeed = rightTargetSpeed / 60000;
+            rightTargetSpeed = rightTargetSpeed / (long) rightWheelDiameter;
  
-                leftTarget = leftClicks - deltaForward;
-                rightTarget = rightClicks + deltaForward;
-              */
+            leftBigPWM = 0;
+            rightBigPWM = 0;
  
+            maxLeftPWM = 128 + 36 * abs(leftTargetSpeed + rightTargetSpeed) / 40;
+            maxRightPWM = maxLeftPWM;
+ 
+            if (abs(deltaForwardLeft + deltaForwardRight) > 20000) errorThresholdSlow = (long) (cpr / 2);
+            else errorThresholdSlow = abs(deltaForwardLeft + deltaForwardRight) / 4;
+ 
+            PIDmode = Speed_PD;
+            PIDautoswitch = true;
+ 
+            break;
+          }
+ 
+        case 3: // turn around an angle expressed in radians (en millièmes de radians exactement):: TurnRad() [4 args, 2 var] -- old [2 args, 1 var]
+          {
+            /* OLD FUNCTION - 2 args, 1 var
               intDeltaAngle = 256 * (long)cardArg[1] + (long)cardArg[0];
               intDeltaAngle = intDeltaAngle - 32768;
  
               deltaAngle = (float) intDeltaAngle / (float) 1000;
  
-              deltaAngleLeft = deltaAngle * (float) trackWidth * (float) cpr;
-              deltaAngleLeft = deltaAngleLeft / ((float) 2 * m_pi * (float) leftWheelDiameter);
+              deltaAngle = deltaAngle * (float) trackWidth * (float) cpr;
+              deltaAngle = deltaAngle / ((float) 2 * m_pi * (float) wheelDiameter);
  
-              deltaAngleRight = deltaAngle * (float) trackWidth * (float) cpr;
-              deltaAngleRight = deltaAngleRight / ((float) 2 * m_pi * (float) leftWheelDiameter);
+              deltaForward = (long) deltaAngle;
  
-              deltaForwardLeft = (long) deltaAngleLeft;
-              deltaForwardRight = (long) deltaAngleRight;
+              leftTarget = leftClicks - deltaForward;
+              rightTarget = rightClicks + deltaForward;
+            */
  
-              leftTarget = leftClicks - deltaForwardLeft;
-              rightTarget = rightClicks + deltaForwardRight;
+            intDeltaAngle = 256 * (long)cardArg[1] + (long)cardArg[0];
+            intDeltaAngle = intDeltaAngle - 32768;
  
-              leftTargetSpeed = 256 * (long)cardArg[3] + (long)cardArg[2];
-              leftTargetSpeed = leftTargetSpeed - 32768;
+            deltaAngle = (float) intDeltaAngle / (float) 1000;
  
-              leftTargetSpeed = leftTargetSpeed * (long) cpr;
-              leftTargetSpeed = leftTargetSpeed * (long) motorWheelDiameter;
-              leftTargetSpeed = leftTargetSpeed / 60000;
-              leftTargetSpeed = leftTargetSpeed / (long) wheelDiameter;
+            deltaAngleLeft = deltaAngle * (float) trackWidth * (float) cpr;
+            deltaAngleLeft = deltaAngleLeft / ((float) 2 * m_pi * (float) leftWheelDiameter);
  
-              if (deltaForwardLeft + deltaForwardRight >= 0)
-              {
-                leftTargetSpeed = -leftTargetSpeed;
-              }
-              else rightTargetSpeed = -rightTargetSpeed;
+            deltaAngleRight = deltaAngle * (float) trackWidth * (float) cpr;
+            deltaAngleRight = deltaAngleRight / ((float) 2 * m_pi * (float) leftWheelDiameter);
  
-              leftBigPWM = 0;
-              rightBigPWM = 0;
+            deltaForwardLeft = (long) deltaAngleLeft;
+            deltaForwardRight = (long) deltaAngleRight;
  
-              maxLeftPWM = 128 + 36 * (abs(leftTargetSpeed) + abs(rightTargetSpeed)) / 40;
-              maxRightPWM = maxLeftPWM;
+            leftTarget = leftClicks - deltaForwardLeft;
+            rightTarget = rightClicks + deltaForwardRight;
  
-              if (abs(deltaForward) > 10000) errorThresholdSlow = (long) (cpr / 2);
-              else errorThresholdSlow = abs(deltaForward) / 2;
+            leftTargetSpeed = 256 * (long)cardArg[3] + (long)cardArg[2];
+            leftTargetSpeed = leftTargetSpeed - 32768;
  
-              PIDmode = Coord_PD; //modifié par Raphaël
-              PIDautoswitch = true;
+            leftTargetSpeed = leftTargetSpeed * (long) cpr;
+            leftTargetSpeed = leftTargetSpeed * (long) motorWheelDiameter;
+            leftTargetSpeed = leftTargetSpeed / 60000;
+            leftTargetSpeed = leftTargetSpeed / (long) wheelDiameter;
  
-              break;
-            }
- 
-          case 138: // set the maximum PWM parameter (0 - 255) :: SetMaxPWM() [1 arg, 1 var]
+            if (deltaForwardLeft + deltaForwardRight >= 0)
             {
-              maxLeftPWM = (int) cardArg[0];
-              maxRightPWM = (int) cardArg[0];
-              break;
+              leftTargetSpeed = -leftTargetSpeed;
             }
+            else rightTargetSpeed = -rightTargetSpeed;
  
-          case 139: // compute and send back the current angle of the robot :: GetAngleRad() [RETURN: 2 args, 1 var]
-            {
-              /*deltaClicks = rightClicks - leftClicks;
-                tempAngle = (float) deltaClicks * (float) m_pi * (float) wheelDiameter;
-                tempAngle = tempAngle / (float) cpr;
-                tempAngle = tempAngle / (float) trackWidth;*/
+            leftBigPWM = 0;
+            rightBigPWM = 0;
  
-              tempAngleLeft = (float) leftClicks * (float) m_pi * (float) wheelDiameter;
-              tempAngleLeft = tempAngleLeft / (float) cpr;
-              tempAngleLeft = tempAngleLeft / (float) trackWidth;
+            maxLeftPWM = 128 + 36 * (abs(leftTargetSpeed) + abs(rightTargetSpeed)) / 40;
+            maxRightPWM = maxLeftPWM;
  
-              tempAngleRight = (float) rightClicks * (float) m_pi * (float) wheelDiameter;
-              tempAngleRight = tempAngleRight / (float) cpr;
-              tempAngleRight = tempAngleRight / (float) trackWidth;
+            if (abs(deltaForward) > 10000) errorThresholdSlow = (long) (cpr / 2);
+            else errorThresholdSlow = abs(deltaForward) / 2;
  
-              tempAngle = tempAngleRight - tempAngleLeft;
+            PIDmode = Coord_PD; //modifié par Raphaël
+            PIDautoswitch = true;
  
-              while (tempAngle < -m_pi) tempAngle = tempAngle + 2 * m_pi;
-              while (tempAngle > m_pi) tempAngle = tempAngle - 2 * m_pi;
+            break;
+          }
  
-              tempAngle = tempAngle * 1000.0;
-              intAngle = (long) tempAngle;
-              intAngle = intAngle + 32768;
+        case 138: // set the maximum PWM parameter (0 - 255) :: SetMaxPWM() [1 arg, 1 var]
+          {
+            maxLeftPWM = (int) cardArg[0];
+            maxRightPWM = (int) cardArg[0];
+            break;
+          }
  
-              replyCommand = 139;
-              replyArgCount = 2;
-              replyArg[1] = (unsigned char) (intAngle / 256);
-              replyArg[0] = (unsigned char) (intAngle - 256 * (long) replyArg[1]);
+        case 139: // compute and send back the current angle of the robot :: GetAngleRad() [RETURN: 2 args, 1 var]
+          {
+            /*deltaClicks = rightClicks - leftClicks;
+              tempAngle = (float) deltaClicks * (float) m_pi * (float) wheelDiameter;
+              tempAngle = tempAngle / (float) cpr;
+              tempAngle = tempAngle / (float) trackWidth;*/
  
-              sendData();
-              break;
-            }
+            tempAngleLeft = (float) leftClicks * (float) m_pi * (float) wheelDiameter;
+            tempAngleLeft = tempAngleLeft / (float) cpr;
+            tempAngleLeft = tempAngleLeft / (float) trackWidth;
  
-          case 140: // compute and send back the coordinates of the robot (x,y,angle) :: GetCurrentCoord() [RETURN: 6 args, 3 var]
-            {
-              /*deltaClicks = rightClicks - leftClicks;
-                tempAngle = (float) deltaClicks * (float) m_pi * (float) wheelDiameter;
-                tempAngle = tempAngle / (float) cpr;
-                tempAngle = tempAngle / (float) trackWidth;*/
+            tempAngleRight = (float) rightClicks * (float) m_pi * (float) wheelDiameter;
+            tempAngleRight = tempAngleRight / (float) cpr;
+            tempAngleRight = tempAngleRight / (float) trackWidth;
  
-              tempAngleLeft = (float) leftClicks * (float) m_pi * (float) wheelDiameter;
-              tempAngleLeft = tempAngleLeft / (float) cpr;
-              tempAngleLeft = tempAngleLeft / (float) trackWidth;
+            tempAngle = tempAngleRight - tempAngleLeft;
  
-              tempAngleRight = (float) rightClicks * (float) m_pi * (float) wheelDiameter;
-              tempAngleRight = tempAngleRight / (float) cpr;
-              tempAngleRight = tempAngleRight / (float) trackWidth;
+            while (tempAngle < -m_pi) tempAngle = tempAngle + 2 * m_pi;
+            while (tempAngle > m_pi) tempAngle = tempAngle - 2 * m_pi;
  
-              tempAngle = tempAngleRight - tempAngleLeft;
+            tempAngle = tempAngle * 1000.0;
+            intAngle = (long) tempAngle;
+            intAngle = intAngle + 32768;
  
-              while (tempAngle < -m_pi) tempAngle = tempAngle + 2 * m_pi;
-              while (tempAngle > m_pi) tempAngle = tempAngle - 2 * m_pi;
+            replyCommand = 139;
+            replyArgCount = 2;
+            replyArg[1] = (unsigned char) (intAngle / 256);
+            replyArg[0] = (unsigned char) (intAngle - 256 * (long) replyArg[1]);
  
-              tempAngle = tempAngle * 1000.0;
-              intAngle = (long) tempAngle;
-              intAngle = intAngle + 32768;
+            sendData();
+            break;
+          }
  
-              x = xClicks * (float) m_pi * (float) leftWheelDiameter / (float) cpr;
-              y = yClicks * (float) m_pi * (float) rightWheelDiameter / (float) cpr;
+        case 140: // compute and send back the coordinates of the robot (x,y,angle) :: GetCurrentCoord() [RETURN: 6 args, 3 var]
+          {
+            /*deltaClicks = rightClicks - leftClicks;
+              tempAngle = (float) deltaClicks * (float) m_pi * (float) wheelDiameter;
+              tempAngle = tempAngle / (float) cpr;
+              tempAngle = tempAngle / (float) trackWidth;*/
  
-              xInt = (long) x + 32768;
-              yInt = (long) y + 32768;
+            tempAngleLeft = (float) leftClicks * (float) m_pi * (float) wheelDiameter;
+            tempAngleLeft = tempAngleLeft / (float) cpr;
+            tempAngleLeft = tempAngleLeft / (float) trackWidth;
  
-              replyCommand = 140;
-              replyArgCount = 6;
-              replyArg[1] = (unsigned char) (intAngle / 256);
-              replyArg[0] = (unsigned char) (intAngle - 256 * (long) replyArg[1]);
-              replyArg[3] = (unsigned char) (xInt / 256);
-              replyArg[2] = (unsigned char) (xInt - 256 * (long) replyArg[3]);
-              replyArg[5] = (unsigned char) (yInt / 256);
-              replyArg[4] = (unsigned char) (yInt - 256 * (long) replyArg[5]);
+            tempAngleRight = (float) rightClicks * (float) m_pi * (float) wheelDiameter;
+            tempAngleRight = tempAngleRight / (float) cpr;
+            tempAngleRight = tempAngleRight / (float) trackWidth;
  
-              sendData();
-              break;
-            }
+            tempAngle = tempAngleRight - tempAngleLeft;
  
-          case 141: // set the target speed :: SetSpeed() [4 args, 2 var]
-            {
-              leftTargetSpeed = 256 * (long) cardArg[1] + (long) cardArg[0];
-              rightTargetSpeed = 256 * (long) cardArg[3] + (long) cardArg[2];
-              leftTargetSpeed = leftTargetSpeed - 32768;
-              rightTargetSpeed = rightTargetSpeed - 32768;
-              leftTargetSpeed = leftTargetSpeed * (long) cpr;
-              rightTargetSpeed = rightTargetSpeed * (long) cpr;
-              leftTargetSpeed = leftTargetSpeed * (long) motorWheelDiameter;
-              rightTargetSpeed = rightTargetSpeed * (long) motorWheelDiameter;
-              leftTargetSpeed = leftTargetSpeed / 60000;
-              rightTargetSpeed = rightTargetSpeed / 60000;
-              leftTargetSpeed = leftTargetSpeed / (long) wheelDiameter;
-              rightTargetSpeed = rightTargetSpeed / (long) wheelDiameter;
-              leftBigPWM = 0;
-              rightBigPWM = 0;
-              break;
-            }
+            while (tempAngle < -m_pi) tempAngle = tempAngle + 2 * m_pi;
+            while (tempAngle > m_pi) tempAngle = tempAngle - 2 * m_pi;
  
-          case 142: // set working mode :: SetWorkingMode() [1 arg, 1 var]
-            {
-              PIDmode = (int) (cardArg[0] - 128);
-              break;
-            }
+            tempAngle = tempAngle * 1000.0;
+            intAngle = (long) tempAngle;
+            intAngle = intAngle + 32768;
  
-          case 5: // find out if the robot has arrived to its destination :: HasArrived() [RETURN: 1 arg, 1 var]
-            {
-              replyCommand = 5;
-              replyArgCount = 1;
+            x = xClicks * (float) m_pi * (float) leftWheelDiameter / (float) cpr;
+            y = yClicks * (float) m_pi * (float) rightWheelDiameter / (float) cpr;
  
-              if (hasArrived == true) replyArg[0] = 1; // modifié par Raphaël
-              else replyArg[0] = 0; // modifié par Raphaël
+            xInt = (long) x + 32768;
+            yInt = (long) y + 32768;
  
-              sendData();
+            replyCommand = 140;
+            replyArgCount = 6;
+            replyArg[1] = (unsigned char) (intAngle / 256);
+            replyArg[0] = (unsigned char) (intAngle - 256 * (long) replyArg[1]);
+            replyArg[3] = (unsigned char) (xInt / 256);
+            replyArg[2] = (unsigned char) (xInt - 256 * (long) replyArg[3]);
+            replyArg[5] = (unsigned char) (yInt / 256);
+            replyArg[4] = (unsigned char) (yInt - 256 * (long) replyArg[5]);
  
-              break;
-            }
-        }
+            sendData();
+            break;
+          }
+ 
+        case 141: // set the target speed :: SetSpeed() [4 args, 2 var]
+          {
+            leftTargetSpeed = 256 * (long) cardArg[1] + (long) cardArg[0];
+            rightTargetSpeed = 256 * (long) cardArg[3] + (long) cardArg[2];
+            leftTargetSpeed = leftTargetSpeed - 32768;
+            rightTargetSpeed = rightTargetSpeed - 32768;
+            leftTargetSpeed = leftTargetSpeed * (long) cpr;
+            rightTargetSpeed = rightTargetSpeed * (long) cpr;
+            leftTargetSpeed = leftTargetSpeed * (long) motorWheelDiameter;
+            rightTargetSpeed = rightTargetSpeed * (long) motorWheelDiameter;
+            leftTargetSpeed = leftTargetSpeed / 60000;
+            rightTargetSpeed = rightTargetSpeed / 60000;
+            leftTargetSpeed = leftTargetSpeed / (long) wheelDiameter;
+            rightTargetSpeed = rightTargetSpeed / (long) wheelDiameter;
+            leftBigPWM = 0;
+            rightBigPWM = 0;
+            break;
+          }
+ 
+        case 142: // set working mode :: SetWorkingMode() [1 arg, 1 var]
+          {
+            PIDmode = (int) (cardArg[0] - 128);
+            break;
+          }
+ 
+        case 5: // find out if the robot has arrived to its destination :: HasArrived() [RETURN: 1 arg, 1 var]
+          {
+            replyCommand = 5;
+            replyArgCount = 1;
+ 
+            if (hasArrived == true) replyArg[0] = 1; // modifié par Raphaël
+            else replyArg[0] = 0; // modifié par Raphaël
+ 
+            sendData();
+ 
+            break;
+          }
+        
       }
  
       //attachInterrupt(Left_INT, leftUpdate, CHANGE);
       //attachInterrupt(Right_INT, rightUpdate, CHANGE);
       digitalWrite(Status_Red, LOW);
-      doingSerial = false;
     }
   }
- 
+  }
   // ##### The program's main loop. #####
   void loop()
   
@@ -850,6 +831,7 @@ int compteur_prev =0;
         }
       }
     }
+    
  
   //############################################################################//
   //############################## PID computing ###############################//
@@ -865,7 +847,7 @@ int compteur_prev =0;
         angleDer = erreurAngle - lastErreurAngle;
         
         distanceInt += erreurDistance;
-        angleInt += erreurAngle
+        angleInt += erreurAngle;
         
         lastErreurDistance = erreurDistance;
         lastErreurAngle = erreurAngle;
