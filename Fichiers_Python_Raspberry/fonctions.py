@@ -54,6 +54,21 @@ def aller(t): ##distance en mm, angle en °, case6.
 	Arg2 = angle%256
 
 	move.write(chr(6)+chr(4) +chr(Arg0) +chr(Arg1) +chr(Arg2) +chr(Arg3))
+	
+def allerSeq(t): ##distance en mm, angle en °, case 7.
+	distance,angle = t
+	distance += 32768
+	angle += 32768
+	distance=min(distance,256**2-1)
+	distance=max(0,distance)
+	angle = min(angle,256**2-1)
+	angle = max(0,angle)
+	Arg1 = distance/256
+	Arg0 = distance%256
+	Arg3 = angle/256
+	Arg2 = angle%256
+
+	move.write(chr(6)+chr(4) +chr(Arg0) +chr(Arg1) +chr(Arg2) +chr(Arg3))
 
 
 def avancer(t): ##case 1
