@@ -20,7 +20,7 @@ def deplacer(t):
 
 def deplacer_aux(t): ##x,y en clicks, angle en millième de radians. Déplacement rectiligne entre deux points
     x,y,angle = t
-    getpos()
+    readPos()
 
     ##calcul de l'angle à donner en consigne
     pos_x, pos_y, pos_angle = position
