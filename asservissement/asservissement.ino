@@ -502,7 +502,7 @@ int compteur_prev =0;
             checkSeq = false;
           }
           
-           case 7:
+           case 7: // same as 6 but sequentially 
           {
             leftClicks = 0;
             rightClicks = 0; // réinitialiser les compteurs
