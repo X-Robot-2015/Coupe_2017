@@ -104,10 +104,12 @@ int compteur_prev =0;
   // new coordinate PD
 
   long erreurDistance, erreurAngle;
-  long distanceTarget, angleTarget;
+  long distanceTarget, angleTarget, distanceTarget2;
   long distanceDer, angleDer;
   long lastErreurAngle, lastErreurDistance;
   long distanceInt, angleInt;
+  bool checkSeq;
+
   
  
   // coordinate PID
@@ -440,6 +442,36 @@ int compteur_prev =0;
             
             PIDmode = New_Coord_PD;
             PIDautoswitch = false;
+            
+            checkSeq = false;
+          }
+          
+           case 7:
+          {
+            leftClicks = 0;
+            rightClicks = 0; // réinitialiser les compteurs
+            
+            distanceTarget = 0;
+
+            distanceTarget2 = 256 * (long)cardArg[1] + (long)cardArg[0];
+            distanceTarget2 = distanceTarget2 - 32768;
+
+            distanceTargetTemp = (float)distanceTarget2;
+            distanceTargetTemp = distanceTargetTemp * (float)cpr / ((float) m_pi * (float) wheelDiameter);
+            distanceTarget2 = (long) distanceTargetTemp;
+
+            angleTarget = 256 * (long)cardArg[3] + (long)cardArg[2];
+            angleTarget = angleTarget - 32768;
+
+            angleTargetTemp = (float)angleTarget;
+            angleTargetTemp = angleTargetTemp * trackWidth * cpr / (180 * wheelDiameter);
+            angleTarget = (long) angleTargetTemp;
+            
+            PIDmode = New_Coord_PD;
+            PIDautoswitch = false;
+            
+            checkSeq = true;
+            
           }
             
         case 4: // set new destinations in CLICKS :: SetNewTarget() [4 args, 2 vars]
@@ -867,6 +899,11 @@ int compteur_prev =0;
         tempPWM = pow(tempPWM, 0.2);
         tempPWM = 255.0 * tempPWM;
         rightPWM = (int) tempPWM * tempPWMsign;
+        
+        
+        if(erreurAngle < 10 && checkSeq){
+           distanceTarget = distanceTarget2;
+         }
         
         break;
       }
