@@ -71,7 +71,9 @@ int compteur_prev =0;
  
   // ### UART communication variables
   // receive
-  unsigned char cardType, cardIndex, cardCommand, cardArgCount;
+  double timemarker, timemarkerprev, delta;
+  double timemarker2, timemarkerprev2;
+  unsigned char cardCommand, cardArgCount;
   // send
   unsigned char replyCommand, replyArgCount;
   unsigned char cardArg[16];
@@ -169,7 +171,7 @@ int compteur_prev =0;
 }
   void incr_left(){
  encoder_G_B = digitalRead(pin_G_B);
- 
+ Serial.println(leftClicks);
  if(encoder_G_B) {
         // -B is high so cclockwise
         leftClicks --;
@@ -196,7 +198,7 @@ int compteur_prev =0;
     
     
     // Robot construction values
-    cpr = 5000; // number of counts per revolution of the encoder
+    cpr = 1200; // number of counts per revolution of the encoder
     wheelDiameter = 72; // ENCODER wheel diameter in milimeters
     leftWheelDiameter = 72; // LEFT ENCODER wheel diameter in milimeters
     rightWheelDiameter = 72; // RIGHT ENCODER wheel diameter in milimeters
@@ -280,46 +282,6 @@ int compteur_prev =0;
     PIDmode   = Speed_PD;*/
   }
  
-  void leftUpdate() // update the encoder values for the LEFT motor
-  {
-      //Serial.println("leftupdate");
-      if(PIND & B00000100)//Thats equivalent to digitalRead, only we read it inside the registers, so as it's much faster. Check Port Manipulation out
-      {
-          
-          if (PIND & B00010000) leftClicks++;
-          else leftClicks--;
-      }
-      else
-      {
-          if (PIND & B00010000) leftClicks--;
-          else leftClicks++;
-      }
- 
-  }
-
-  void rightUpdate() // update the encoder values for the RIGHT motor
-  { 
-    
-    if(PIND & B00001000)//left A//if ((PINC>>PINC0) & 1) // equivalent to "if (PINC.0 == 1)"
-    {
-      
-        if (PIND & B00000010) rightClicks--; // left B // equivalent to "if (PINC.1 == 1)"
-        else rightClicks++;
-    }
-    else
-    {
-        
-        
-        if (PIND & B00000010) {
-          rightClicks++;
-          
-        } // Left B//equivalent to "if (PINC.1 == 1)"
-        else{
-         rightClicks--;
-        
-        }
-    }
-  }
  
   void setMotorDir(int motor, int dir) // set the motor direction -- REVIEWED
   {
@@ -382,19 +344,12 @@ int compteur_prev =0;
   }
   */
   
-  void sendData()
-  {
-    
-    Serial.write(replyCommand);
-    Serial.write(replyArgCount);
-    for (i = 0; i < replyArgCount; i++) Serial.write(replyArg[i]);
-    
-  }
+
  
   void doSerial() // UART processing function
   {
     
-    if (Serial.available() >= 4)
+    if (Serial.available() >= 2)
     {
       //detachInterrupt(Left_INT);
       //detachInterrupt(Right_INT);
@@ -413,7 +368,7 @@ int compteur_prev =0;
  
       switch (cardCommand)
       {
-        case 6: // set new detination in Position (distance,angle) in mm and degree.
+        case 6: // set new destination in Position (distance,angle) in mm and degree.
           {
             leftClicks = 0;
             rightClicks = 0; // réinitialiser les compteurs
@@ -512,6 +467,11 @@ int compteur_prev =0;
               rightTarget = rightClicks + deltaForward;
               break;
             */
+
+            
+            
+
+          
             deltaForward = 256 * (long)cardArg[1] + (long)cardArg[0];
             deltaForward = deltaForward - 32768;
  
@@ -548,10 +508,10 @@ int compteur_prev =0;
  
             if (abs(deltaForwardLeft + deltaForwardRight) > 20000) errorThresholdSlow = (long) (cpr / 2);
             else errorThresholdSlow = abs(deltaForwardLeft + deltaForwardRight) / 4;
- 
+            
             PIDmode = Speed_PD;
             PIDautoswitch = true;
- 
+            
             break;
           }
  
@@ -726,18 +686,6 @@ int compteur_prev =0;
             break;
           }
  
-        case 5: // find out if the robot has arrived to its destination :: HasArrived() [RETURN: 1 arg, 1 var]
-          {
-            replyCommand = 5;
-            replyArgCount = 1;
- 
-            if (hasArrived == true) replyArg[0] = 1; // modifié par Raphaël
-            else replyArg[0] = 0; // modifié par Raphaël
- 
-            sendData();
- 
-            break;
-          }
         
       }
  
@@ -747,10 +695,23 @@ int compteur_prev =0;
     }
   }
   }
+  
+  void sendData(){
+          /*Serial.println("debut");
+          Serial.println(String(replyCommand));
+          Serial.println(String(replyArgCount));
+          for(int i = 0; i < replyArgCount; i++){
+            Serial.println(String(replyArg[i]));
+            */
+          //}
+  }
   // ##### The program's main loop. #####
   void loop()
   
   {
+
+          
+          
   //**************************************************************************************//
   //*******************computing current coordinates (first 40 lines)*********************//
   //*****goal: to calculate x and y (in clicks) and the error relative to the targets*****//
@@ -801,8 +762,15 @@ int compteur_prev =0;
   //****************************************************************************//
  
   //*********************** checking if we have arrived ************************//
-    if ((leftError < errorThresholdStop) && (rightError < errorThresholdStop)) hasArrived = true;
-    else hasArrived = false;//this is used only to return the value to the brain. other than that, it doesn't change how the loop works
+    if ((leftError < errorThresholdStop) && (rightError < errorThresholdStop)){
+      timemarker2 = millis();
+          if(timemarker2-timemarkerprev2 > 500){
+              replyCommand = 5;
+              replyArgCount = 0;
+              sendData();
+              timemarkerprev2 = timemarker2;
+          }
+    }
  
   //********************* implementing the PID autoswitch***********************//
     if (PIDautoswitch == true)
@@ -874,9 +842,10 @@ int compteur_prev =0;
       case Coord_PD: // PD algorithm, target COORDINATES
         {
           // computing the errors for each motor
+          
           leftError = leftTarget - leftClicks;
           rightError = rightTarget - rightClicks;
- 
+          
  
   //Serial.print("leftError: ");
   //Serial.print(leftError);
@@ -905,7 +874,9 @@ int compteur_prev =0;
           tempPWM = pow(tempPWM, 0.2);
           tempPWM = 255.0 * tempPWM;
           leftPWM = (int) tempPWM * tempPWMsign;
- 
+
+          
+          
           tempPWM = (float) abs(rightPWM) / 255.0;
           tempPWMsign = rightPWM / abs(rightPWM);
           tempPWM = pow(tempPWM, 0.2);
@@ -958,6 +929,19 @@ int compteur_prev =0;
           leftBigPWM = leftBigPWM + (kPspeed * leftSpeedError + kDspeed * leftSpeedDer) / 16;
           rightBigPWM = rightBigPWM + (kPspeed * rightSpeedError + kDspeed * rightSpeedDer) / 16;
           leftPWM = leftBigPWM / 64;
+          
+          timemarker = millis();
+          if(timemarker-timemarkerprev > 100){
+              replyCommand = 6;
+              replyArgCount = 1;
+              replyArg[0] = leftPWM;
+              // sendData();
+              timemarkerprev = timemarker;
+          }
+          
+         
+
+          
           rightPWM = rightBigPWM / 64;
  
           lastPWM = (abs(leftPWM) + abs(rightPWM)) / 2;
