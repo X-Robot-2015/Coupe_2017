@@ -106,10 +106,12 @@ int compteur_prev =0;
   // new coordinate PD
 
   long erreurDistance, erreurAngle;
-  long distanceTarget, angleTarget;
+  long distanceTarget, angleTarget, distanceTarget2;
   long distanceDer, angleDer;
   long lastErreurAngle, lastErreurDistance;
   long distanceInt, angleInt;
+  bool checkSeq;
+
   
  
   // coordinate PID
@@ -198,12 +200,21 @@ int compteur_prev =0;
     
     
     // Robot construction values
+<<<<<<< HEAD
     cpr = 1200; // number of counts per revolution of the encoder
     wheelDiameter = 72; // ENCODER wheel diameter in milimeters
     leftWheelDiameter = 72; // LEFT ENCODER wheel diameter in milimeters
     rightWheelDiameter = 72; // RIGHT ENCODER wheel diameter in milimeters
     trackWidth = 314; // the distance between the wheels in milimeters
     motorWheelDiameter = 98; // MOTOR wheel diameter in milimeters
+=======
+    cpr = 1216; // number of counts per revolution of the encoder
+    wheelDiameter = 75; // ENCODER wheel diameter in milimeters
+    leftWheelDiameter = 75; // LEFT ENCODER wheel diameter in milimeters
+    rightWheelDiameter = 75; // RIGHT ENCODER wheel diameter in milimeters
+    trackWidth = 225; // the distance between the wheels in milimeters
+    motorWheelDiameter = 75; // MOTOR wheel diameter in milimeters
+>>>>>>> 8a29eb7a97cd2fe49a6e3a1bcae11e9d53de821a
  
     // configuring I/O digital ports
     //pinMode(Left_A, INPUT);  // encoder A left input
@@ -307,6 +318,62 @@ int compteur_prev =0;
     if (motor == LEFT) analogWrite(PWM_L, speed);
     else if (motor == RIGHT) analogWrite(PWM_R, speed);
   }
+
+  void setParameters(long dist, long ang)
+  {
+    distanceTarget = 0;
+    distanceTarget2 = dist;
+    angleTarget = ang;
+
+    distanceTargetTemp = (float)distanceTarget2;
+    distanceTargetTemp = distanceTargetTemp * (float)cpr / ((float) m_pi * (float) wheelDiameter);
+    distanceTarget2 = (long) distanceTargetTemp;
+
+    angleTargetTemp = (float)angleTarget;
+    angleTargetTemp = angleTargetTemp * trackWidth * cpr / (180 * wheelDiameter);
+    angleTarget = (long) angleTargetTemp;
+            
+    PIDmode = New_Coord_PD;
+    PIDautoswitch = false;
+            
+    checkSeq = true;
+  }
+
+  void Asserv()
+  {
+        erreurDistance = distanceTarget - (leftClicks+rightClicks)/2;
+        erreurAngle = angleTarget - (rightClicks-leftClicks);
+        
+        distanceDer = erreurDistance - lastErreurDistance;
+        angleDer = erreurAngle - lastErreurAngle;
+        
+        distanceInt += erreurDistance;
+        angleInt += erreurAngle;
+        
+        lastErreurDistance = erreurDistance;
+        lastErreurAngle = erreurAngle;
+        
+        leftPWM = (kPcoord * (erreurDistance - erreurAngle) + kDcoord * (distanceDer - angleDer) + kIcoord *(distanceInt - angleInt) ) / 1024;
+        rightPWM = (kPcoord * (erreurDistance + erreurAngle) + kDcoord * (distanceDer + angleDer) + kIcoord*(distanceInt + angleInt) ) / 1024;
+        
+        // compensating the non-linear dependency speed = f(PWM_Value)
+        tempPWM = (float) abs(leftPWM) / 255.0;
+        tempPWMsign = leftPWM / abs(leftPWM);
+        tempPWM = pow(tempPWM, 0.2);
+        tempPWM = 255.0 * tempPWM;
+        leftPWM = (int) tempPWM * tempPWMsign;
+ 
+        tempPWM = (float) abs(rightPWM) / 255.0;
+        tempPWMsign = rightPWM / abs(rightPWM);
+        tempPWM = pow(tempPWM, 0.2);
+        tempPWM = 255.0 * tempPWM;
+        rightPWM = (int) tempPWM * tempPWMsign;
+        
+        
+        if(erreurAngle < 10 && checkSeq){
+           distanceTarget = distanceTarget2;
+         }
+  }
  /*
   void setPwmFreq(int pin, int divisor) // function used to override the PWM frequency setting used by default by Arduino
   {
@@ -395,6 +462,23 @@ int compteur_prev =0;
             
             PIDmode = New_Coord_PD;
             PIDautoswitch = false;
+            
+            checkSeq = false;
+          }
+          
+           case 7: // same as 6 but sequentially 
+          {
+            leftClicks = 0;
+            rightClicks = 0; // réinitialiser les compteurs
+
+            distanceTarget2 = 256 * (long)cardArg[1] + (long)cardArg[0];
+            distanceTarget2 = distanceTarget2 - 32768;
+            
+            angleTarget = 256 * (long)cardArg[3] + (long)cardArg[2];
+            angleTarget = angleTarget - 32768;
+            
+            setParameters(distanceTarget2,angleTarget);
+            
           }
             
         case 4: // set new destinations in CLICKS :: SetNewTarget() [4 args, 2 vars]
@@ -808,33 +892,7 @@ int compteur_prev =0;
     {
       case New_Coord_PD:
       {
-        erreurDistance = distanceTarget - (leftClicks+rightClicks)/2;
-        erreurAngle = angleTarget - (rightClicks-leftClicks);
-        
-        distanceDer = erreurDistance - lastErreurDistance;
-        angleDer = erreurAngle - lastErreurAngle;
-        
-        distanceInt += erreurDistance;
-        angleInt += erreurAngle;
-        
-        lastErreurDistance = erreurDistance;
-        lastErreurAngle = erreurAngle;
-        
-        leftPWM = (kPcoord * (erreurDistance - erreurAngle) + kDcoord * (distanceDer - angleDer) + kIcoord *(distanceInt - angleInt) ) / 1024;
-        rightPWM = (kPcoord * (erreurDistance + erreurAngle) + kDcoord * (distanceDer + angleDer) + kIcoord*(distanceInt + angleInt) ) / 1024;
-        
-        // compensating the non-linear dependency speed = f(PWM_Value)
-        tempPWM = (float) abs(leftPWM) / 255.0;
-        tempPWMsign = leftPWM / abs(leftPWM);
-        tempPWM = pow(tempPWM, 0.2);
-        tempPWM = 255.0 * tempPWM;
-        leftPWM = (int) tempPWM * tempPWMsign;
- 
-        tempPWM = (float) abs(rightPWM) / 255.0;
-        tempPWMsign = rightPWM / abs(rightPWM);
-        tempPWM = pow(tempPWM, 0.2);
-        tempPWM = 255.0 * tempPWM;
-        rightPWM = (int) tempPWM * tempPWMsign;
+        Asserv();
         
         break;
       }
