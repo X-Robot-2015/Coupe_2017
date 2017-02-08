@@ -119,9 +119,9 @@ long lastLeftError, lastRightError;
 long leftDer, rightDer;
 long newLeftTarget, newRightTarget;
 
-const int kPcoord = 20; // WARNING: the value is divided by 1024
-const int kDcoord = 1000; // WARNING: the value is divided by 1024
-const int kIcoord = 0.5;
+const int kPcoord = 50; // WARNING: the value is divided by 1024
+const int kDcoord = 1500; // WARNING: the value is divided by 1024
+const int kIcoord = 0.8;
 
 // speed PID
 long leftSpeed, rightSpeed;
@@ -203,7 +203,7 @@ void setup()
   
 
   // Robot construction values
-  cpr = 1216; // number of counts per revolution of the encoder
+  cpr = 300; // number of counts per revolution of the encoder
   wheelDiameter = 75; // ENCODER wheel diameter in milimeters
   leftWheelDiameter = 75; // LEFT ENCODER wheel diameter in milimeters
   rightWheelDiameter = 75; // RIGHT ENCODER wheel diameter in milimeters
@@ -249,10 +249,10 @@ void setup()
   attachInterrupt(Right_INT, incr_right, FALLING);
   attachInterrupt(Left_INT, incr_left, FALLING);
 
+  aller(-1400,0);
 
   Serial.setTimeout(1000); // nécessaire
 
-  PIDmode = Coord_PD;
 
   errorThresholdSlow = (long) (cpr / 2);//by default the thresholder is half of a circle - you can chang it
   errorThresholdStop = 200;//             by default the thresholder is one fifth of a circle
@@ -269,8 +269,6 @@ void setup()
     maxLeftPWM = 180;
     maxRightPWM = 180;
   }
-
-  aller(0,1);
 
 
   /*  long turnss = 2;
@@ -409,39 +407,19 @@ void Asserv()
   rightPWM = (int) tempPWM * tempPWMsign;
 
 
-  if (erreurAngle < 1  && checkSeq) {
+  if (erreurAngle < 10  && checkSeq && erreurAngle>-10) {
     distanceTarget = distanceTarget2;
   }
 }
 
 void aller(long distance, long angle) {
   leftClicks = 0;
-  rightClicks = 0; // réinitialiser les compteurs
+          rightClicks = 0; // réinitialiser les compteurs
 
-  distanceTarget = 256 * (long)cardArg[1] + (long)cardArg[0];
-  distanceTarget = distanceTarget - 32768;
+          distanceTarget2 = distance;
+          angleTarget = angle;
 
-  distanceTargetTemp = (float)distanceTarget;
-  distanceTargetTemp = distanceTargetTemp * (float)cpr / ((float) m_pi * (float) wheelDiameter);
-  distanceTarget = (long) distanceTargetTemp;
-
-  angleTarget = 256 * (long)cardArg[3] + (long)cardArg[2];
-  angleTarget = angleTarget - 32768;
-
-  angleTargetTemp = (float)angleTarget;
-  angleTargetTemp = angleTargetTemp * trackWidth * cpr / (180 * wheelDiameter);
-  angleTarget = (long) angleTargetTemp;
-
-  //if(angleTarget!=0){
-  //angleTarget = (long) 180/m_pi*atan(2*tan(angleTarget*m_pi/180)/(1-pow(tan(angleTarget*m_pi/180),2)));
-  //distanceTarget = (long) distanceTarget*cos(angleTargetTemp*m_pi/180)*angleTarget*m_pi/180/sin(angleTarget*m_pi/180);
-  //}
-
-
-  PIDmode = New_Coord_PD;
-  PIDautoswitch = false;
-
-  checkSeq = false;
+          setParameters(distanceTarget2, angleTarget);
 }
 /*
   void setPwmFreq(int pin, int divisor) // function used to override the PWM frequency setting used by default by Arduino
@@ -866,7 +844,7 @@ void doSerial() // UART processing function
 void loop()
 
 { PIDmode = New_Coord_PD ;
-  checkSeq = false;
+  
   //**************************************************************************************//
   //*******************computing current coordinates (first 40 lines)*********************//
   //*****goal: to calculate x and y (in clicks) and the error relative to the targets*****//
