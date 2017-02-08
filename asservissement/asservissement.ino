@@ -119,9 +119,9 @@ long lastLeftError, lastRightError;
 long leftDer, rightDer;
 long newLeftTarget, newRightTarget;
 
-const int kPcoord = 50; // WARNING: the value is divided by 1024
-const int kDcoord = 1500; // WARNING: the value is divided by 1024
-const int kIcoord = 0.8;
+const int kPcoord = 40; // WARNING: the value is divided by 1024
+const int kDcoord = 1900; // WARNING: the value is divided by 1024
+const int kIcoord = 0.85;
 
 // speed PID
 long leftSpeed, rightSpeed;
@@ -204,11 +204,11 @@ void setup()
 
   // Robot construction values
   cpr = 300; // number of counts per revolution of the encoder
-  wheelDiameter = 75; // ENCODER wheel diameter in milimeters
-  leftWheelDiameter = 75; // LEFT ENCODER wheel diameter in milimeters
-  rightWheelDiameter = 75; // RIGHT ENCODER wheel diameter in milimeters
+  wheelDiameter = 73; // ENCODER wheel diameter in milimeters
+  leftWheelDiameter = 73; // LEFT ENCODER wheel diameter in milimeters
+  rightWheelDiameter = 73; // RIGHT ENCODER wheel diameter in milimeters
   trackWidth = 225; // the distance between the wheels in milimeters
-  motorWheelDiameter = 75; // MOTOR wheel diameter in milimeters
+  motorWheelDiameter = 73; //  MOTOR wheel diameter in milimeters
 
   // configuring I/O digital ports
   //pinMode(Left_A, INPUT);  // encoder A left input
@@ -249,7 +249,7 @@ void setup()
   attachInterrupt(Right_INT, incr_right, FALLING);
   attachInterrupt(Left_INT, incr_left, FALLING);
 
-  aller(-1400,0);
+  
 
   Serial.setTimeout(1000); // nécessaire
 
@@ -270,6 +270,7 @@ void setup()
     maxRightPWM = 180;
   }
 
+  //aller(1000,45);
 
   /*  long turnss = 2;
     leftTarget  = turnss*cpr;
@@ -369,7 +370,7 @@ void setParameters(long dist, long ang)
 
   PIDmode = New_Coord_PD;
   PIDautoswitch = false;
-
+  hasArrived = false;
   checkSeq = true;
 }
 
@@ -409,6 +410,10 @@ void Asserv()
 
   if (erreurAngle < 10  && checkSeq && erreurAngle>-10) {
     distanceTarget = distanceTarget2;
+  }
+
+  if(erreurDistance <10 && erreurDistance>-10){
+    hasArrived = true;
   }
 }
 
