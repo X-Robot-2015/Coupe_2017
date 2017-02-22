@@ -270,7 +270,7 @@ void setup()
     maxRightPWM = 180;
   }
 
-  //aller(1000,45);
+  aller(0,0);
 
   /*  long turnss = 2;
     leftTarget  = turnss*cpr;
@@ -425,6 +425,12 @@ void aller(long distance, long angle) {
           angleTarget = angle;
 
           setParameters(distanceTarget2, angleTarget);
+}
+
+bool has_Arrived(){
+  if(erreurDistance <10 && erreurDistance>-10 && erreurAngle < 10  && erreurAngle>-10){
+    hasArrived = true;
+  }
 }
 /*
   void setPwmFreq(int pin, int divisor) // function used to override the PWM frequency setting used by default by Arduino
