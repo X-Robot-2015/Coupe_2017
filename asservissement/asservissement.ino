@@ -171,11 +171,13 @@ void asservitCall();
 void tTransitCall();
 void Disable();
 void PrepareStatus();
-
+void tDeleteCall();
+void DisableDelete();
 
 //Task initiation
-Task tAsserv(0, TASK_ONCE, &asservitCall, &Manager, true, NULL, &Disable);
-Task tTransit(&tTransitCall, &Manager);
+Task tAsserv(0, TASK_ONCE, &asservitCall, NULL, true, NULL, &Disable);
+Task tTransit(&tTransitCall, NULL);
+Task tDelete(TASK_IMMEDIATE, TASK_ONCE, &tDeleteCall, &Manager, false, NULL, &DisableDelete);
 
 //Callback explicite
 void tTransitCall()
@@ -197,7 +199,6 @@ void tTransitCall()
         Serial.println(arrived());
         aller(400, 90);
         etape++;
-        asservit();
         break;
       }
     case 3:
@@ -228,11 +229,14 @@ void tTransitCall()
       digitalWrite(9,HIGH);
       while(digitalRead(10)!=HIGH){
       }
-      etape++; 
+      etape++;
+      break;
      }
      case 7: 
      {
        aller(0,-90);
+       etape++;
+       break;
      }
   }
 
@@ -255,6 +259,15 @@ void PrepareStatus()
 {
   st.setWaiting();
   tTransit.waitFor(&st);
+}
+
+void tDeleteCall() {};
+void DisableDelete() {
+  tAsserv.disable();
+  Manager.deleteTask(tAsserv);
+  tTransit.disable();
+  Manager.deleteTask(tTransit);
+  tDelete.disable();
 }
 
 
@@ -1197,7 +1210,15 @@ void doSerial() // UART processing function
 
             break;
           }
-
+          case 8: // faire le circuit fermé
+          {
+            Manager.addTask(tAsserv);
+            tAsserv.enable();
+            etape = 1;
+            Manager.addTask(tTransit);
+            tTransit.enable();
+            break;
+          }
         }
 
         //attachInterrupt(Left_INT, leftUpdate, CHANGE);
