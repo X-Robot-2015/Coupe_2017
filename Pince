@@ -6,7 +6,9 @@ Serial Com(SERIAL_TX, SERIAL_RX);
 DigitalOut ServD(D9); // Pin Servo gauche
 DigitalOut ServG(D10); // Pin Servo droite
 DigitalOut ServB(D6); // Pin Servo de base
-
+DigitalIn E(D8); // Pin début de cycle 
+DIgitalOut S(D7); // pin fin de cycle
+bool test;
 
 //Parametrage servos pinces : attention, commandes  sont inversees !!! 0.002 et 0.0008 pour les positions max
 // Parametrage servo base : 0.0018 (haute) et 0.001 (basse) pour les positions max
@@ -145,7 +147,12 @@ void loop()
 
 void main(){ // attention ! une fois lancee, la pince ne sarrete pas, le code nest qun prototype!
     setup();
-    while(1){
+    test = true;
+    if(E==1 && test){
         loop();
-    }
+        S=1;
+        test=false;
+        }
+    
+        
 }
