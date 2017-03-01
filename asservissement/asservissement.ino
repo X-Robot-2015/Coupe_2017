@@ -225,6 +225,14 @@ void tTransitCall()
      case 6:
      {
       asservit();
+      digitalWrite(9,HIGH);
+      while(digitalRead(10)!=HIGH){
+      }
+      etape++; 
+     }
+     case 7: 
+     {
+       aller(0,-90);
      }
   }
 
@@ -288,6 +296,9 @@ void setup()
 {
   //capteurs
   Serial.begin(9600);
+  
+  pinMode(9,OUTPUT); //test pince
+  pinMode(10,INPUT); //pareil
 
   pinMode(pin_G_A, INPUT);
   pinMode(pin_G_B, INPUT);
