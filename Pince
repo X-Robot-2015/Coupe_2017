@@ -7,6 +7,11 @@ DigitalOut ServD(D9); // Pin Servo droite
 DigitalOut ServG(D10); // Pin Servo gauche
 DigitalOut ServB(D6); // Pin Servo de base
 
+DigitalIn E(D8); // Pin début de cycle 
+DIgitalOut S(D7); // pin fin de cycle
+
+bool test;
+
 
 //Parametrage servos pinces : attention, commandes  sont inversees !!! 0.002ms et 0.0008ms pour les positions max
 // Parametrage servo base : 0.0018 (180 haute) et 0.001 ( 0 basse) pour les positions max
@@ -182,7 +187,6 @@ void main(){ // attention ! une fois lancee, la pince ne sarrete pas, le code ne
     while(true){
         if(E==1 && test){
             descendre();
-            
             S=1;
             test=false;
         }
