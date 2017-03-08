@@ -198,11 +198,15 @@ void tTransitCall()
         digitalWrite(9, HIGH);
         while (digitalRead(10) != HIGH) {
         }
+        aller(0,20);
+        digitalWrite(9,LOW)
         etape++;
         break;
       }
     case 3:
       {
+        while(digitalRead(10)==HIGH){
+        }
         Serial.println("Case3");
         Serial.println(arrived());
         aller(-150,0);
@@ -816,6 +820,8 @@ void sendData()
   for (i = 0; i < replyArgCount; i++) Serial.write(replyArg[i]);
 
 }
+
+digitalWrite(9, LOW);
 
 void doSerial() // UART processing function
 {
