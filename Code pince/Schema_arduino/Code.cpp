@@ -12,6 +12,11 @@ PwmOut      PwmG(D10); // Pin Servo droite
 PwmOut      PwmB(D2); // Pin Servo de base
 PwmOut      PwmD(D9);
 
+DigitalIn E(D8); // Pin début de cycle 
+DIgitalOut S(D7); // pin fin de cycle
+
+bool test;
+
 unsigned int cardArg[16];
 unsigned int cardCommand, cardArgCount;
 
@@ -68,6 +73,8 @@ void pose()
     
 } 
 
+S=0;
+
 void loop()
 {
     if(pc.readable()){    
@@ -98,7 +105,20 @@ void loop()
 int main()
 {
     setup();
-    while(1) {
-        loop();
+    test = true;
+    while(true){
+        if(E==1 && test){
+            descendre();
+            wait(1);
+            S=1;
+            test=false;
+        }
+        if(!test && E == 0){
+            attraper();
+            wait(1);
+            monter();
+            S=0;
+            break;
+        }
     }
 }
