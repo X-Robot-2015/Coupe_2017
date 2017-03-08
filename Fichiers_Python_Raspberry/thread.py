@@ -3,10 +3,11 @@ import fonctions
 import serial
 import threading,time
 
-move = serial.Serial("/dev/ttyACM3",9600,timeout = 1)
+move = serial.Serial("/dev/moteur",9600,timeout = 1)
+pince = serial.Serial("/dev/pince",9600,timeout = 1)
 ## actionneur = serial.Serial("/dev/actionneur",9600,timeout = 1)
 
-l=[]
+l=[(1,(100,100)),(7,0)]
 finished = 1
 position = (0,0,0)
 
@@ -29,7 +30,9 @@ class execution(threading.Thread):
 				if command[0]==5:
 					aller(command[1])
 				if command[0]==6:
-					getpos()
+					readPos()
+				if command[0]==7:
+					attraper()
 
 
 class serialRead(threading.Thread):
@@ -70,6 +73,12 @@ def cmd(f,args):
 	t=(f,args)
 	l.append(t)
 	print(l)
+
+def attraper():
+    pince.write(chr(0)+chr(0))
+
+def reposer():
+    pince.write(chr(1)+chr(0))
 
 def deplacer(t):
     x_mm = t[0]

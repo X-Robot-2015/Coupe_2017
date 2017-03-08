@@ -200,21 +200,13 @@ int compteur_prev =0;
     
     
     // Robot construction values
-<<<<<<< HEAD
-    cpr = 1200; // number of counts per revolution of the encoder
-    wheelDiameter = 72; // ENCODER wheel diameter in milimeters
-    leftWheelDiameter = 72; // LEFT ENCODER wheel diameter in milimeters
-    rightWheelDiameter = 72; // RIGHT ENCODER wheel diameter in milimeters
-    trackWidth = 314; // the distance between the wheels in milimeters
-    motorWheelDiameter = 98; // MOTOR wheel diameter in milimeters
-=======
+
     cpr = 1216; // number of counts per revolution of the encoder
     wheelDiameter = 75; // ENCODER wheel diameter in milimeters
     leftWheelDiameter = 75; // LEFT ENCODER wheel diameter in milimeters
     rightWheelDiameter = 75; // RIGHT ENCODER wheel diameter in milimeters
     trackWidth = 225; // the distance between the wheels in milimeters
     motorWheelDiameter = 75; // MOTOR wheel diameter in milimeters
->>>>>>> 8a29eb7a97cd2fe49a6e3a1bcae11e9d53de821a
  
     // configuring I/O digital ports
     //pinMode(Left_A, INPUT);  // encoder A left input
@@ -781,13 +773,13 @@ int compteur_prev =0;
   }
   
   void sendData(){
-          /*Serial.println("debut");
+          Serial.println("debut");
           Serial.println(String(replyCommand));
           Serial.println(String(replyArgCount));
           for(int i = 0; i < replyArgCount; i++){
             Serial.println(String(replyArg[i]));
-            */
-          //}
+            
+          }
   }
   // ##### The program's main loop. #####
   void loop()
