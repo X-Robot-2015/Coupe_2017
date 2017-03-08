@@ -178,7 +178,20 @@ void loop()
 
 void main(){ // attention ! une fois lancee, la pince ne sarrete pas, le code nest qun prototype!
     setup();
-    while(1){
-        loop();
+    test = true;
+    while(true){
+        if(E==1 && test){
+            descendre();
+            
+            S=1;
+            test=false;
+        }
+        if(!test && E == 0){
+            attraper();
+           
+            monter();
+            S=0;
+            break;
+        }
     }
 }
