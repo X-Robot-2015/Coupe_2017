@@ -1,0 +1,158 @@
+#include "mbed.h"
+#include <string>
+using namespace std; 
+
+Serial Com(SERIAL_TX, SERIAL_RX); 
+DigitalOut ServD(D9); // Pin Servo gauche
+DigitalOut ServG(D10); // Pin Servo droite
+DigitalOut ServB(D6); // Pin Servo de base
+DigitalIn E(D8); // Pin début de cycle 
+DIgitalOut S(D7); // pin fin de cycle
+bool test;
+
+//Parametrage servos pinces : attention, commandes  sont inversees !!! 0.002 et 0.0008 pour les positions max
+// Parametrage servo base : 0.0018 (haute) et 0.001 (basse) pour les positions max
+
+void servdroite(float degree){ // 0 position ouvert et 180 position max fermee
+    float impulsion=degree*0.0013/180.0+0.0008;
+    for (int t=0;t<100;t++){
+        ServD=1;
+        wait(impulsion);
+        ServD=0;
+        wait(0.020);
+    }  
+}
+
+void servgauche(float degree){ // 180 ouvert et 0 ferme 
+    float impulsion=degree*0.0013/180.0+0.0008;
+    for (int t=0;t<100;t++){
+        ServG=1;
+        wait(impulsion);
+        ServG=0;
+        wait(0.020);
+    }  
+}
+
+void servbase(float degree){ //200 haute, 0 basse
+    float impulsion=degree*0.0008/180.0+0.001;
+    for (int t=0;t<60;t++){
+        ServB=1;
+        wait(impulsion);
+        ServB=0;
+        wait(0.020);
+    }  
+}
+
+void descendre(){ // Descente de la pince ouverte
+    float impulsion_g=160*0.0013/180.0+0.0008; //160
+    float impulsion_d=0*0.0013/180+0.0008; //0
+    float impulsion_b=48.0*0.0008/180.0+0.001;
+    for (int t=0;t<60;t++){ 
+        ServG=1;
+        wait(impulsion_g);
+        ServG=0;
+        ServD=1;
+        wait(impulsion_d);
+        ServD=0;
+        ServB=1;
+        wait(impulsion_b);
+        ServB=0;
+        wait(0.020);
+    }  
+}
+
+void attraper(){ // Attrape Cylindre
+    float impulsion_d=94*0.0013/180.0+0.0008; //95
+    float impulsion_g=57*0.0013/180.0+0.0008; //55
+    for (int t=0;t<60;t++){ 
+        ServG=1;
+        wait(impulsion_g);
+        ServG=0;
+        ServD=1;
+        wait(impulsion_d);
+        ServD=0;
+        wait(0.020);
+    }  
+}
+
+void monter(){ //Monter Cylindre
+    servbase(200);
+}
+
+
+void lacher(){ // Lacher Cylindre
+    float impulsion_g=160*0.0013/180.0+0.0008; //160
+    float impulsion_d=0*0.0013/180+0.0008; //0
+    for (int t=0;t<100;t++){ 
+        ServG=1;
+        wait(impulsion_g);
+        ServG=0;
+        ServD=1;
+        wait(impulsion_d);
+        ServD=0;
+        wait(0.020);
+    }  
+}
+
+
+void setup() 
+{ 
+  Com.baud(115200);
+  Com.format(8, SerialBase :: None, 1);
+} 
+
+
+
+void loop() 
+{   
+    Com.printf("Descente \n");
+    descendre();
+    //wait(1);
+    Com.printf("attrape \n");
+    attraper();
+   // wait(1);
+    Com.printf("Monte \n");
+    monter();
+    
+    //Le code suivant ne sert que pour calibrer... a laisser en commentaire si la pince marche
+    //wait(1);
+    //lacher();
+    //Com.printf("Lache \n");
+    //wait(1);
+    /*Com.printf("pince fermee \n");
+    servgauche(55);
+    servdroite(95);
+    wait(1);
+    Com.printf("pince ouverte \n");//Meilleur parametrage
+    servgauche(160);
+    servdroite(0);
+    wait(1);*/
+    /*Com.printf("0 \n");
+    for (int i = 0 ; i<100;i++){
+    ServG=1;
+    wait(0.0008);
+    ServG=0;
+    wait(0.02); 
+    }
+    wait(1);
+    Com.printf("180 \n");
+    for (int i = 0 ; i<100;i++){
+    ServG=1;
+    wait(0.0021);
+    ServG=0;
+    wait(0.02);
+    }
+    wait(1);*/
+} 
+
+void main(){ // attention ! une fois lancee, la pince ne sarrete pas, le code nest qun prototype!
+    setup();
+    test = true;
+    if(E==1 && test){
+        loop();
+        S=1;
+        test=false;
+        }
+    
+        
+}
