@@ -296,7 +296,7 @@ void setup()
   wheelDiameter = 75; // ENCODER wheel diameter in milimeters
   leftWheelDiameter = 75; // LEFT ENCODER wheel diameter in milimeters
   rightWheelDiameter = 75; // RIGHT ENCODER wheel diameter in milimeters
-  trackWidth = 225; // the distance between the wheels in milimeters
+  trackWidth = 275; // the distance between the wheels in milimeters
   motorWheelDiameter = 75; // MOTOR wheel diameter in milimeters
 
   // configuring I/O digital ports
