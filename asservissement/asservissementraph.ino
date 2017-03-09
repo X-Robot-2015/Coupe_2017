@@ -1,6 +1,3 @@
-//the variable hasArrived doesn't work anymore.
-//I have to ask Laurent abt his methodes
-
 /*
   Motor Controller software
   This software is due to interface the computer  and the motor controller, receiving
@@ -171,13 +168,13 @@ void asservitCall();
 void tTransitCall();
 void Disable();
 void PrepareStatus();
-void tDeleteCall();
-void DisableDelete();
+//void tDeleteCall();
+//void DisableDelete();
 
 //Task initiation
-Task tAsserv(0, TASK_ONCE, &asservitCall, NULL, true, NULL, &Disable);
-Task tTransit(&tTransitCall, NULL);
-Task tDelete(TASK_IMMEDIATE, TASK_ONCE, &tDeleteCall, &Manager, false, NULL, &DisableDelete);
+Task tAsserv(0, TASK_ONCE, &asservitCall, &Manager, true, NULL, &Disable);
+Task tTransit(&tTransitCall, &Manager);
+//Task tDelete(TASK_IMMEDIATE, TASK_ONCE, &tDeleteCall, &Manager, false, NULL, &DisableDelete);
 
 //Callback explicite
 void tTransitCall()
@@ -187,31 +184,54 @@ void tTransitCall()
   {
     case 1:
       {
-        Serial.println("Case1");
-        Serial.println(arrived());
-        aller(200,0);
+        Serial.println("Case0");
         etape++;
         break;
       }
     case 2:
       {
-        digitalWrite(9, HIGH);
-        while (digitalRead(10) != HIGH) {
-        }
-        aller(0,20);
-        digitalWrite(9,LOW);
+        Serial.println("Case0");
         etape++;
         break;
       }
     case 3:
       {
-        while(digitalRead(10)==HIGH){
-        }
-        Serial.println("Case3");
-        Serial.println(arrived());
-        aller(-150,0);
+        Serial.println("Case1");
+        aller(200, 0);
         etape++;
         break;
+      }
+    case 4:
+      {
+        Serial.println("Case2");
+        digitalWrite(9, HIGH);
+        if (digitalRead(10) != HIGH) {
+          break;
+        }
+        else {
+          aller(0, 20);
+          digitalWrite(9, LOW);
+          etape++;
+          break;
+        }
+      }
+    case 5:
+      {
+        Serial.println("Case3");
+        if (digitalRead(10) == HIGH) {
+          break;
+        }
+        else {
+          aller(-150, 0);
+          etape++;
+          break;
+        }
+      }
+    case 6:
+      {
+        Serial.println("Case4");
+        asservit();
+        return;
       }
   }
 
@@ -236,14 +256,16 @@ void PrepareStatus()
   tTransit.waitFor(&st);
 }
 
-void tDeleteCall() {};
-void DisableDelete() {
+//void tDeleteCall() {};
+/*
+  void DisableDelete() {
   tAsserv.disable();
   Manager.deleteTask(tAsserv);
   tTransit.disable();
   Manager.deleteTask(tTransit);
   tDelete.disable();
-}
+  }
+*/
 
 
 void incr_right() {
@@ -379,6 +401,7 @@ void setup()
     PIDmode   = Speed_PD;*/
   PrepareStatus();
   tAsserv.delay();
+
 
 }
 
@@ -1185,15 +1208,6 @@ void doSerial() // UART processing function
 
             sendData();
 
-            break;
-          }
-        case 8: // faire le circuit fermé
-          {
-            Manager.addTask(tAsserv);
-            tAsserv.enable();
-            etape = 1;
-            Manager.addTask(tTransit);
-            tTransit.enable();
             break;
           }
         }
