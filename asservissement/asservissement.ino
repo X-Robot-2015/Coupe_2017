@@ -14,7 +14,7 @@
 */
 
 
-
+int compteurzero = 0;
 unsigned long currentTime_1;
 unsigned long loopTime = 0;
 const int pin_G_A = 2;
@@ -119,11 +119,10 @@ long lastLeftError, lastRightError;
 long leftDer, rightDer;
 long newLeftTarget, newRightTarget;
 
-const int kPcoord = 40; // WARNING: the value is divided by 1024
-const int kDcoord = 1900; // WARNING: the value is divided by 1024
-const int kIcoord = 0.85;
-
-// speed PID
+const int kPcoord = 1100; // WARNING: the value is divided by 1024
+const int kDcoord = 4000; // WARNING: the value is divided by 1024
+const int kIcoord = 0.65;
+// speed PI
 long leftSpeed, rightSpeed;
 long leftTargetSpeed, rightTargetSpeed;
 long leftSpeedError, rightSpeedError;
@@ -165,6 +164,7 @@ void incr_right() {
 
   }
   else {
+    
     // B is low so counter-clockwise
 
     rightClicks --;
@@ -204,11 +204,11 @@ void setup()
 
   // Robot construction values
   cpr = 300; // number of counts per revolution of the encoder
-  wheelDiameter = 73; // ENCODER wheel diameter in milimeters
-  leftWheelDiameter = 73; // LEFT ENCODER wheel diameter in milimeters
-  rightWheelDiameter = 73; // RIGHT ENCODER wheel diameter in milimeters
-  trackWidth = 225; // the distance between the wheels in milimeters
-  motorWheelDiameter = 73; //  MOTOR wheel diameter in milimeters
+  wheelDiameter = 85; // ENCODER wheel diameter in milimeters
+  leftWheelDiameter =85; // LEFT ENCODER wheel diameter in milimeters
+  rightWheelDiameter = 85; // RIGHT ENCODER wheel diameter in milimeters
+  trackWidth = 280; // the distance between the wheels in milimeters
+  motorWheelDiameter = 85; //  MOTOR wheel diameter in milimeters
 
   // configuring I/O digital ports
   //pinMode(Left_A, INPUT);  // encoder A left input
@@ -270,10 +270,10 @@ void setup()
     maxRightPWM = 180;
   }
 
-  aller(0,0);
+  aller(300,90);
 
   /*  long turnss = 2;
-    leftTarget  = turnss*cpr;
+    leftTarget -= turnss*cpr;
     rightTarget = turnss*cpr;
 
 
@@ -376,11 +376,14 @@ void setParameters(long dist, long ang)
 
 void Asserv()
 {
-  Serial.println(leftClicks);
-  Serial.println(rightClicks);
+  
 
   erreurDistance = distanceTarget - (leftClicks + rightClicks) / 2;
   erreurAngle = angleTarget - (rightClicks - leftClicks);
+
+  Serial.println(erreurAngle);
+  Serial.println(erreurDistance);
+  
 
   distanceDer = erreurDistance - lastErreurDistance;
   angleDer = erreurAngle - lastErreurAngle;
@@ -394,22 +397,30 @@ void Asserv()
   leftPWM = (kPcoord * (erreurDistance - erreurAngle) + kDcoord * (distanceDer - angleDer) + kIcoord * (distanceInt - angleInt) ) / 1024;
   rightPWM = (kPcoord * (erreurDistance + erreurAngle) + kDcoord * (distanceDer + angleDer) + kIcoord * (distanceInt + angleInt) ) / 1024;
 
-  // compensating the non-linear dependency speed = f(PWM_Value)
+  //compensating the non-linear dependency speed = f(PWM_Value)
   tempPWM = (float) abs(leftPWM) / 255.0;
   tempPWMsign = leftPWM / abs(leftPWM);
-  tempPWM = pow(tempPWM, 0.2);
+  tempPWM = pow(tempPWM, 0.25);
   tempPWM = 255.0 * tempPWM;
   leftPWM = (int) tempPWM * tempPWMsign;
 
   tempPWM = (float) abs(rightPWM) / 255.0;
   tempPWMsign = rightPWM / abs(rightPWM);
-  tempPWM = pow(tempPWM, 0.2);
+  tempPWM = pow(tempPWM, 0.25);
   tempPWM = 255.0 * tempPWM;
   rightPWM = (int) tempPWM * tempPWMsign;
 
+  if (erreurAngle < 10 && erreurAngle>-10){
+    compteurzero++;
+  }
 
-  if (erreurAngle < 10  && checkSeq && erreurAngle>-10) {
+  if (checkSeq  && compteurzero > 100) {
     distanceTarget = distanceTarget2;
+    checkSeq=false;
+    setMotor(LEFT,2,0);
+    setMotor(RIGHT,2,0);
+    delay(1000);
+    
   }
 
   if(erreurDistance <10 && erreurDistance>-10){
