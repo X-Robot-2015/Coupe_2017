@@ -14,7 +14,8 @@
 */
 
 
-int compteurzero = 0;
+int compteurZeroDistance = 0;
+int compteurZeroAngle = 0;
 unsigned long currentTime_1;
 unsigned long loopTime = 0;
 const int pin_G_A = 2;
@@ -372,6 +373,8 @@ void setParameters(long dist, long ang)
   PIDautoswitch = false;
   hasArrived = false;
   checkSeq = true;
+  compteurZeroAngle=0;
+  compteurZeroDistance=0;
 }
 
 void Asserv()
@@ -411,11 +414,17 @@ void Asserv()
   rightPWM = (int) tempPWM * tempPWMsign;
 
   if (erreurAngle < 10 && erreurAngle>-10){
-    compteurzero++;
+    compteurZeroAngle++;
   }
 
-  if (checkSeq  && compteurzero > 100) {
+  if(erreurDistance <10 && erreurDistance>-10){
+    compteurZeroDistance ++ ;
+  }
+
+  if (checkSeq  && compteurZeroAngle > 100) {
     distanceTarget = distanceTarget2;
+    compteurZeroDistance=0;
+    compteurZeroAngle=0;
     checkSeq=false;
     setMotor(LEFT,2,0);
     setMotor(RIGHT,2,0);
@@ -423,23 +432,32 @@ void Asserv()
     
   }
 
-  if(erreurDistance <10 && erreurDistance>-10){
+  if(erreurDistance <10 && erreurDistance>-10 && compteurZeroDistance >100 && checkSeq == false){
     hasArrived = true;
   }
 }
 
 void aller(long distance, long angle) {
   leftClicks = 0;
-          rightClicks = 0; // réinitialiser les compteurs
+  rightClicks = 0; // réinitialiser les compteurs
 
-          distanceTarget2 = distance;
-          angleTarget = angle;
+  distanceTarget2 = distance;
+  angleTarget = angle;
 
-          setParameters(distanceTarget2, angleTarget);
+  setParameters(distanceTarget2, angleTarget);
 }
 
+void initializeZero(){
+  compteurZeroDistance=0;
+  compteurZeroAngle=0;
+}
+
+
+
 bool has_Arrived(){
-  if(erreurDistance <10 && erreurDistance>-10 && erreurAngle < 10  && erreurAngle>-10){
+
+  
+  if(erreurDistance <10 && erreurDistance>-10 && erreurAngle < 10  && erreurAngle>-10 && compteurZeroAngle > 100 && compteurZeroDistance >100){
     hasArrived = true;
   }
 }
