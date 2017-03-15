@@ -2,12 +2,13 @@
 import fonctions
 import serial
 import threading,time
+from math import atan,pi
 
 move = serial.Serial("/dev/moteur",9600,timeout = 1)
-pince = serial.Serial("/dev/pince",9600,timeout = 1)
+capteur = serial.Serial("/dev/pince",115200,timeout = 1)
 ## actionneur = serial.Serial("/dev/actionneur",9600,timeout = 1)
 
-l=[(1,(100,100)),(7,0)]
+l = []
 finished = 1
 position = (0,0,0)
 
@@ -67,7 +68,18 @@ class serialRead(threading.Thread):
                      y = 256*ord(Targ[5])+ord(Targ[4])
                      angle = 256*ord(Targ[1])+ord(Targ[0])
                      position = (x,y,angle)
-             
+                     
+distance_tab=[-1,-1,-1]
+class capteurDist(threading.Thread):
+    def run(self):
+		while True:
+			replyCommand = capteur.readline()
+			#on identifie à quelle commande correspond la réponse
+			if replyCommand != '':
+				Targ = replyCommand.decode().split(',')
+				#print(Targ)
+				update_capt(Targ)
+          
 
 def cmd(f,args):
 	t=(f,args)
@@ -188,6 +200,71 @@ def test():
 	fonctions.cmd(3,-3140)
 	fonctions.cmd(6,(150,45))
 
+def update_capt(t):
+    if(len(t)< 4) :
+        return
+    global distance_tab
+    captIndex= int(t[0])
+    timeStamp = int(t[1])
+    rangeStatus = int(t[2])
+    dist = int(t[3])
+    if (rangeStatus==0):
+        distance_tab[captIndex]=dist
+        #print(distance_tab)
+        
+    else:
+        distance_tab[captIndex]=-500
+        
 
+
+def recherche_tube():
+    global distance_tab
+    
+    dPince = 100
+    dCapteurs = 35
+    dCentre = 210
+    
+    gauche = distance_tab[2]
+    centre=distance_tab[1]
+    droite = distance_tab[0]
+    
+    if min(distance_tab)>300:
+        print("pas d'objet en face")
+        return -1
+    if centre>gauche+40:
+        
+        angle = pi/2-atan((gauche+dCentre)/dCapteurs)
+        print("objet à gauche :" +angle)        
+        tourner(int(1000*(angle)))
+        return 0
+    if centre>droite+40:
+        
+        angle = -(pi/2-atan((droite+dCentre)/dCapteurs))
+        print("objet à droite : :" +angle)        
+        tourner(int(1000*(angle)))
+        return 0
+  
+    if droite>centre+40:
+        if gauche>centre+40:
+            print("objet en face") 
+            avancer(((centre-dPince),80))
+            return 1
+        else:
+            angle = (pi/2-atan((gauche+dCentre)/dCapteurs))/2
+            print("centre gauche:" +angle)
+                        
+            tourner(int(1000*(angle)))
+            return 0
+    else:
+        if gauche>centre+40:
+            angle = -(pi/2-atan((droite+dCentre)/dCapteurs))/2
+            tourner(int(1000*(angle)))
+            print("centre droit :" +angle )
+            return 0
+        else:
+            print("gros objet")
+            return -1
+
+capteurDist().start()
 serialRead().start()
 execution().start()

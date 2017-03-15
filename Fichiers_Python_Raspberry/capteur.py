@@ -1,5 +1,12 @@
+# coding: utf8
+
 import serial
-capteur = serial.Serial("COM5",115200,timeout = 1)
+import threading
+from math import atan,pi
+
+
+capteur = serial.Serial("/dev/pince",115200,timeout = 1)
+
 distance_tab=[-1,-1,-1]
 class capteurDist(threading.Thread):
     def run(self):
@@ -8,7 +15,7 @@ class capteurDist(threading.Thread):
 			#on identifie à quelle commande correspond la réponse
 			if replyCommand != '':
 				Targ = replyCommand.decode().split(',')
-				print(Targ)
+				#print(Targ)
 				update_capt(Targ)
           
 
@@ -24,6 +31,8 @@ def update_capt(t):
         
     else:
         distance_tab[captIndex]=-500
+        
+    recherche_tube()
 
 
 def recherche_tube():
@@ -42,12 +51,12 @@ def recherche_tube():
         return -1
     if centre>gauche+40:
         print("objet à gauche")
-        angle = pi/2-arctan((gauche+dCentre)/dCapteurs)
-        tourner(angle)
+        angle = pi/2-atan((gauche+dCentre)/dCapteurs)
+        #tourner(angle)
         return 0
     if centre>droite+40:
         print("objet à droite")
-        angle = -(pi/2-arctan((droite+dCentre)/dCapteurs))
+        angle = -(pi/2-atan((droite+dCentre)/dCapteurs))
         return 0
   
     if droite>centre+40:
@@ -57,11 +66,11 @@ def recherche_tube():
             return 1
         else:
             print("centre gauche")
-            angle = (pi/2-arctan((gauche+dCentre)/dCapteurs))/2
+            angle = (pi/2-atan((gauche+dCentre)/dCapteurs))/2
             return 0
     else:
         if gauche>centre+40:
-            angle = -(pi/2-arctan((droite+dCentre)/dCapteurs))/2
+            angle = -(pi/2-atan((droite+dCentre)/dCapteurs))/2
             print("centre droit")
             return 0
         else:

@@ -153,7 +153,7 @@ float tempDelta;
 int tempPWMsign;
 float angleTargetTemp;
 float distanceTargetTemp;
-
+/*
 //define Task parameter
 #define _TASK_STATUS_REQUEST
 #include <TaskScheduler.h>
@@ -399,8 +399,8 @@ void setup()
 
     PIDmode = Coord_PD;
     PIDmode   = Speed_PD;*/
-  PrepareStatus();
-  tAsserv.delay();
+  //PrepareStatus();
+//  tAsserv.delay();
 
 
 }
@@ -587,7 +587,7 @@ void aller(long distance, long angle) {
 
 void asservit()
 {
-  PIDmode = New_Coord_PD ;
+  //PIDmode = New_Coord_PD ;
 
   //**************************************************************************************//
   //*******************computing current coordinates (first 40 lines)*********************//
@@ -1223,7 +1223,7 @@ void loop()
 
 {
   asservit();
-  Manager.execute();
+  //Manager.execute();
 
   // checking for serial input
   doSerial();
