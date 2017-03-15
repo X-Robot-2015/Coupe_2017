@@ -531,33 +531,18 @@ void doSerial() // UART processing function
     {
       case 6: // set new detination in Position (distance,angle) in mm and degree.
         {
-          leftClicks = 0;
-          rightClicks = 0; // réinitialiser les compteurs
+          
 
           distanceTarget = 256 * (long)cardArg[1] + (long)cardArg[0];
           distanceTarget = distanceTarget - 32768;
-
-          distanceTargetTemp = (float)distanceTarget;
-          distanceTargetTemp = distanceTargetTemp * (float)cpr / ((float) m_pi * (float) wheelDiameter);
-          distanceTarget = (long) distanceTargetTemp;
-
           angleTarget = 256 * (long)cardArg[3] + (long)cardArg[2];
           angleTarget = angleTarget - 32768;
-
-          angleTargetTemp = (float)angleTarget;
-          angleTargetTemp = angleTargetTemp * trackWidth * cpr / (180 * wheelDiameter);
-          angleTarget = (long) angleTargetTemp;
-
-          //if(angleTarget!=0){
-          //angleTarget = (long) 180/m_pi*atan(2*tan(angleTarget*m_pi/180)/(1-pow(tan(angleTarget*m_pi/180),2)));
-          //distanceTarget = (long) distanceTarget*cos(angleTargetTemp*m_pi/180)*angleTarget*m_pi/180/sin(angleTarget*m_pi/180);
-          //}
+          aller(distanceTarget,angleTarget);    
 
 
           PIDmode = New_Coord_PD;
           PIDautoswitch = false;
 
-          checkSeq = false;
         }
 
       case 7: // same as 6 but sequentially
