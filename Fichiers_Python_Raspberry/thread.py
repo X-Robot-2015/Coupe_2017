@@ -234,32 +234,31 @@ def recherche_tube():
     if centre>gauche+40:
         
         angle = pi/2-atan((gauche+dCentre)/dCapteurs)
-        print("objet à gauche :" +angle)        
-        tourner(int(1000*(angle)))
+        print("objet à gauche :" )        
+        aller((0,int(180*angle/pi)))
         return 0
     if centre>droite+40:
         
         angle = -(pi/2-atan((droite+dCentre)/dCapteurs))
-        print("objet à droite : :" +angle)        
-        tourner(int(1000*(angle)))
+        print("objet à droite : :")        
+        aller((0,int(180*angle/pi)))
         return 0
   
     if droite>centre+40:
         if gauche>centre+40:
             print("objet en face") 
-            avancer(((centre-dPince),80))
+            aller((centre-dPince,0))
             return 1
         else:
             angle = (pi/2-atan((gauche+dCentre)/dCapteurs))/2
-            print("centre gauche:" +angle)
-                        
-            tourner(int(1000*(angle)))
+            print("centre gauche:")
+            aller((0,int(180*angle/pi)))
             return 0
     else:
         if gauche>centre+40:
             angle = -(pi/2-atan((droite+dCentre)/dCapteurs))/2
-            tourner(int(1000*(angle)))
-            print("centre droit :" +angle )
+            aller((0,int(180*angle/pi)))
+            print("centre droit :"  )
             return 0
         else:
             print("gros objet")
