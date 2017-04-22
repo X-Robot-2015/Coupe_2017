@@ -519,7 +519,7 @@ void AsservSoft()
   tempPWM = 255.0 * tempPWM;
   rightPWM = (int) tempPWM * tempPWMsign;
 
-  if (erreurAngle < 10 && erreurAngle>-10 &&( (angleTarget>0 && temps*coefVitesseR>angleTarget) || (angleTarget<0 && -temps*coefVitesseR<angleTarget))){
+  if (erreurAngle < 10 && erreurAngle>-10 &&( (angleTarget>0 && temps*coefVitesseR>=angleTarget) || (angleTarget<=0 && -temps*coefVitesseR<=angleTarget))){
     compteurZeroAngle++;
   }
 
