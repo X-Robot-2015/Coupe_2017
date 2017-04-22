@@ -277,7 +277,7 @@ void setup()
     maxRightPWM = 180;
   }
 
-  aller(500,90);
+  //aller(500,90);
 
   /*  long turnss = 2;
     leftTarget -= turnss*cpr;
